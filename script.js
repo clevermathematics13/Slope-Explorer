@@ -139,6 +139,7 @@ function updateDisplay() {
   locationEl.textContent = `(${last.x}, ${last.y})`;
   stepSizeEl.textContent = stepSize;
   ruleEl.textContent = "x + 1";
+  // Clarification: the slope at each point = (that point's x-value) + 1
 }
 
 // ── Check the student's step ────────────────────────────
@@ -169,7 +170,7 @@ function checkStep() {
 
     if (stepsCompleted >= stepsNeeded) {
       showFeedback("🎉 Stage Complete!",
-        `You plotted ${stepsNeeded} steps! The slope at each point was x + 1, so the path curves upward.`,
+        `You plotted ${stepsNeeded} steps! Because the slope at each point equals that point's x-value + 1, the path curves upward — the steeper it gets, the faster y grows.`,
         "success");
       if (currentStage < stages.length - 1) {
         reflectionSec.classList.remove("hidden");
