@@ -38,7 +38,7 @@ header h1 {
 main {
   flex: 1;
   display: grid;
-  grid-template-columns: 320px 1fr;
+  grid-template-columns: 380px 1fr;
   gap: 1.5rem;
   padding: 1.5rem;
   max-width: 1200px;
@@ -80,6 +80,8 @@ main {
 }
 
 .input-group input {
+  width: 100%;
+  min-width: 0;
   padding: 0.5rem 0.75rem;
   border: 2px solid #334155;
   border-radius: 0.5rem;
@@ -201,4 +203,65 @@ footer {
   .graph-panel {
     min-height: 300px;
   }
+}
+/* ===== New Path Builder Elements (Add to bottom of your CSS) ===== */
+
+.machine-display {
+  background: #0f172a;
+  border-left: 4px solid #38bdf8;
+  padding: 1rem;
+  border-radius: 0 0.5rem 0.5rem 0;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+
+.machine-display p {
+  margin-bottom: 0.5rem;
+}
+
+.machine-display p:last-child {
+  margin-bottom: 0;
+}
+
+hr {
+  border: 0;
+  height: 1px;
+  background: #334155;
+  margin: 1.5rem 0;
+}
+
+#reflection-section {
+  margin-top: 1.5rem;
+  background: #334155; /* Dark slate to match your buttons */
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  border: 1px solid #475569;
+}
+
+#reflection-section h3 {
+  color: #facc15; /* Warning yellow to grab attention */
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+}
+
+#student-reflection {
+  width: 100%;
+  margin: 0.75rem 0;
+  padding: 0.75rem;
+  border: 2px solid #0f172a;
+  border-radius: 0.5rem;
+  background: #0f172a;
+  color: #f8fafc;
+  font-family: "Inter", sans-serif;
+  resize: vertical;
+}
+
+#student-reflection:focus {
+  outline: none;
+  border-color: #38bdf8;
+}
+
+/* Override the inline HTML styles for the AI box */
+#ai-feedback-box {
+  border-left-color: #475569 !important;
 }

@@ -3,77 +3,73 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Slope Explorer</title>
+  <title>Path Builder Challenge</title>
 
-  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fira+Code&display=swap" rel="stylesheet">
 
-  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 
-  <!-- Our Stylesheet -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
   <header>
-    <h1>📐 Slope Explorer</h1>
-    <p class="subtitle">Plot points, walk the staircase, and discover slope step-by-step.</p>
+    <h1>🤖 The Path Builder Challenge</h1>
+    <p class="subtitle">Use the Slope Machine to guide the robot across the map.</p>
   </header>
 
   <main>
-    <!-- Controls Panel -->
     <section class="controls">
-      <h2>Set Your Points</h2>
+      <h2>The Slope Machine</h2>
+      
+      <div class="machine-display">
+        <p><strong>Current Location:</strong> <span id="current-location" style="font-family: 'Fira Code', monospace; color: #38bdf8;">(0, 0)</span></p>
+        <p><strong>Rule:</strong> Steepness = <span id="current-rule" style="font-family: 'Fira Code', monospace; color: #facc15;">x + 1</span></p>
+        <p><strong>Target Step Size:</strong> Move right by <span id="step-size" style="font-family: 'Fira Code', monospace; color: #38bdf8;">1</span></p>
+      </div>
 
+      <hr>
+
+      <h2>Plot Your Next Step</h2>
       <div class="input-row">
         <div class="input-group">
-          <label for="x1">x₁</label>
-          <input type="number" id="x1" value="1" />
+          <label for="next-x">Next x</label>
+          <input type="number" id="next-x" step="0.5" placeholder="e.g. 1" />
         </div>
         <div class="input-group">
-          <label for="y1">y₁</label>
-          <input type="number" id="y1" value="2" />
+          <label for="next-y">Next y</label>
+          <input type="number" id="next-y" step="0.5" placeholder="e.g. 1" />
         </div>
       </div>
 
-      <div class="input-row">
-        <div class="input-group">
-          <label for="x2">x₂</label>
-          <input type="number" id="x2" value="5" />
-        </div>
-        <div class="input-group">
-          <label for="y2">y₂</label>
-          <input type="number" id="y2" value="8" />
-        </div>
+      <button id="checkPathBtn" class="btn primary">Check My Step</button>
+      <button id="resetBtn" class="btn secondary">Start Over</button>
+
+      <div id="ai-feedback-box" class="results hidden">
+        <h3 id="feedback-title">Result</h3>
+        <p id="feedback-text">Waiting for your first step...</p>
       </div>
 
-      <button id="plotBtn" class="btn primary">Plot &amp; Calculate</button>
-      <button id="resetBtn" class="btn secondary">Reset</button>
-
-      <!-- Results -->
-      <div id="results" class="results hidden">
-        <h3>Results</h3>
-        <p><strong>Rise (Δy):</strong> <span id="rise">—</span></p>
-        <p><strong>Run (Δx):</strong> <span id="run">—</span></p>
-        <p class="slope-result"><strong>Slope (m):</strong> <span id="slope">—</span></p>
-        <p><strong>Equation:</strong> <span id="equation">—</span></p>
+      <div id="reflection-section" class="hidden">
+        <h3>Stage Complete!</h3>
+        <p>When we checked the machine every 0.5 steps instead of 1 full step, what happened to the shape of the path?</p>
+        <textarea id="student-reflection" rows="4" placeholder="Type your thoughts here..."></textarea>
+        <button id="next-stage-btn" class="btn primary">Submit & Continue</button>
       </div>
+
     </section>
 
-    <!-- Graph Panel -->
     <section class="graph-panel">
       <canvas id="slopeChart"></canvas>
     </section>
   </main>
 
   <footer>
-    <p>Built for learning &middot; Slope Explorer</p>
+    <p>Built for learning &middot; Grade 9 Enrichment</p>
   </footer>
 
-  <!-- Our Script -->
   <script src="script.js"></script>
 </body>
 </html>
