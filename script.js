@@ -150,7 +150,7 @@ function updateDisplay() {
   const last = path[path.length - 1];
   locationEl.textContent = `(${last.x}, ${last.y})`;
   stepSizeEl.textContent = stepSize;
-  ruleEl.textContent = "x + 1";
+  ruleEl.innerHTML = "m<sub>n</sub> = x<sub>n</sub> + 1";
   // Clarification: the slope at each point = (that point's x-value) + 1
 }
 
