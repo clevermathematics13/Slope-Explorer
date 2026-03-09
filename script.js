@@ -12,6 +12,7 @@ const feedbackText    = document.getElementById("feedback-text");
 const reflectionSec   = document.getElementById("reflection-section");
 const nextStageBtn    = document.getElementById("next-stage-btn");
 const ctx             = document.getElementById("slopeChart").getContext("2d");
+const tableBody       = document.querySelector("#values-table tbody");
 
 // ── Game State ──────────────────────────────────────────
 const stages = [
@@ -54,9 +55,7 @@ const slopeChart = new Chart(ctx, {
       }
     },
     plugins: {
-      legend: {
-        labels: { color: "#cbd5e1", font: { family: "Inter" } }
-      },
+      legend: { display: false },
       tooltip: {
         callbacks: {
           label: (tip) => `(${tip.parsed.x}, ${tip.parsed.y})`
@@ -133,6 +132,19 @@ function updateChart() {
   slopeChart.update();
 }
 
+// ── Table ───────────────────────────────────────────────
+function updateTable() {
+  tableBody.innerHTML = "";
+  for (let i = 0; i < path.length; i++) {
+    const p = path[i];
+    const slope = slopeAt(p.x);
+    const tr = document.createElement("tr");
+    if (i === path.length - 1) tr.classList.add("current-row");
+    tr.innerHTML = `<td>${i}</td><td>${p.x}</td><td>${slope}</td><td>${p.y}</td>`;
+    tableBody.appendChild(tr);
+  }
+}
+
 // ── Update the info display ─────────────────────────────
 function updateDisplay() {
   const last = path[path.length - 1];
@@ -164,6 +176,7 @@ function checkStep() {
     path.push({ x: expectedX, y: expectedY });
     updateChart();
     updateDisplay();
+    updateTable();
 
     const stepsCompleted = path.length - 1;
     const stepsNeeded = stages[currentStage].stepsNeeded;
@@ -225,6 +238,7 @@ function advanceStage() {
   nextYInput.value = "";
   updateDisplay();
   updateChart();
+  updateTable();
 }
 
 // ── Reset ───────────────────────────────────────────────
@@ -238,6 +252,7 @@ function resetAll() {
   nextYInput.value = "";
   updateDisplay();
   updateChart();
+  updateTable();
 }
 
 // ── Event Listeners ─────────────────────────────────────
@@ -254,3 +269,4 @@ document.querySelectorAll("input").forEach((input) => {
 // ── Initialize ──────────────────────────────────────────
 updateDisplay();
 updateChart();
+updateTable();
