@@ -21,21 +21,13 @@
   </header>
 
   <main>
-    <!-- Left: Rules & Feedback -->
+    <!-- Left: Rules -->
     <section class="rules-panel">
       <div class="machine-display">
         <p style="color: #94a3b8; font-weight: 600; margin-bottom: 0.3rem;">Formulae</p>
         <p><span style="font-family: 'Fira Code', monospace; color: #facc15;">m<sub>n</sub> = x<sub>n</sub> + 1</span></p>
         <p><span style="font-family: 'Fira Code', monospace; color: #facc15;">y<sub>n+1</sub> = y<sub>n</sub> + m<sub>n</sub> · h</span></p>
         <p><strong>Step size:</strong> <span style="font-family: 'Fira Code', monospace; color: #94a3b8;">h = </span><span id="step-size" style="font-family: 'Fira Code', monospace; color: #38bdf8;">1</span></p>
-      </div>
-
-      <div id="prompt-box" class="prompt-box">
-        <p id="prompt-text">Enter x<sub>1</sub> in the table →</p>
-      </div>
-
-      <div id="feedback-box" class="feedback-box hidden">
-        <p id="feedback-text"></p>
       </div>
 
       <button id="resetBtn" class="btn secondary">Start Over</button>
@@ -48,7 +40,7 @@
       </div>
     </section>
 
-    <!-- Center: Table -->
+    <!-- Center: Table + Prompt/Feedback -->
     <section class="table-panel">
       <div class="table-scroll">
         <table id="values-table">
@@ -57,6 +49,16 @@
           </thead>
           <tbody></tbody>
         </table>
+      </div>
+
+      <div class="table-bottom">
+        <div id="prompt-box" class="prompt-box">
+          <p id="prompt-text">Enter x<sub>1</sub> in the table →</p>
+        </div>
+
+        <div id="feedback-box" class="feedback-box hidden">
+          <p id="feedback-text"></p>
+        </div>
       </div>
     </section>
 

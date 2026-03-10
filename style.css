@@ -160,7 +160,16 @@ main {
 }
 
 .table-scroll {
+  flex: 0 1 50%;
+  overflow-y: auto;
+}
+
+.table-bottom {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-top: 0.5rem;
   overflow-y: auto;
 }
 
