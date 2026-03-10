@@ -288,11 +288,21 @@ function createInput(which) {
 }
 
 // ── Validation ──────────────────────────────────────────
+function parseInput(str) {
+  str = str.trim();
+  const fracMatch = str.match(/^(-?\d+(?:\.\d+)?)\s*\/\s*(-?\d+(?:\.\d+)?)$/);
+  if (fracMatch) {
+    const num = parseFloat(fracMatch[1]), den = parseFloat(fracMatch[2]);
+    return den !== 0 ? num / den : NaN;
+  }
+  return parseFloat(str);
+}
+
 function validateEntry(input, which) {
   if (animating) return;  // wait for trace animation to finish
-  const val = parseFloat(input.value);
+  const val = parseInput(input.value);
   if (Number.isNaN(val)) {
-    showFeedback("Enter a number.", "error");
+    showFeedback("Enter a number (decimals or fractions like 9/4).", "error");
     shakInput(input);
     return;
   }
