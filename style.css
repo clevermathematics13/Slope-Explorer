@@ -335,6 +335,33 @@ footer {
   border-color: #38bdf8;
 }
 
+/* ===== Reflection Feedback ===== */
+.reflection-feedback {
+  margin-top: 0.4rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid #38bdf8;
+  color: #e2e8f0;
+}
+
+.reflection-feedback.error {
+  background: rgba(248, 113, 113, 0.12);
+  border-color: #f87171;
+  color: #f87171;
+}
+
+.reflection-feedback.hidden {
+  display: none;
+}
+
+#submit-reflection-btn.hidden,
+#next-stage-btn.hidden {
+  display: none;
+}
+
 /* ===== Animations ===== */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(4px); }

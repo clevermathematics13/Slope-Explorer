@@ -514,6 +514,11 @@ function advanceStage() {
   currentCol = 0;
   slopePreview = null;
   reflectionSec.classList.add("hidden");
+  reflectionFeedback.className = "reflection-feedback hidden";
+  submitReflectionBtn.classList.remove("hidden");
+  nextStageBtn.classList.add("hidden");
+  studentReflection.value = "";
+  studentReflection.disabled = false;
   feedbackBox.className = "feedback-box hidden";
   stepSizeEl.textContent = stepSize;
 
@@ -545,6 +550,11 @@ function resetAll() {
   currentCol = 0;
   slopePreview = null;
   reflectionSec.classList.add("hidden");
+  reflectionFeedback.className = "reflection-feedback hidden";
+  submitReflectionBtn.classList.remove("hidden");
+  nextStageBtn.classList.add("hidden");
+  studentReflection.value = "";
+  studentReflection.disabled = false;
   feedbackBox.className = "feedback-box hidden";
   stepSizeEl.textContent = stepSize;
   hideOverlay();
@@ -552,6 +562,63 @@ function resetAll() {
   updateChart();
   updatePrompt();
 }
+
+// ── Reflection Evaluation ───────────────────────────────
+const submitReflectionBtn = document.getElementById("submit-reflection-btn");
+const reflectionFeedback  = document.getElementById("reflection-feedback");
+const studentReflection   = document.getElementById("student-reflection");
+
+function evaluateReflection(response) {
+  const text = response.toLowerCase().trim();
+  if (text.length < 5) {
+    return { score: 0, feedback: "Try writing a bit more! Think about what smaller steps might do to the shape of the path." };
+  }
+
+  const keywords = {
+    smooth: ["smooth", "smoother", "curved", "curvy", "less jagged", "less sharp"],
+    accurate: ["accurat", "closer", "precise", "better", "exact", "nearer", "close to"],
+    moreSteps: ["more steps", "more points", "more segments", "twice", "double", "10 steps", "ten steps"],
+    smaller: ["smaller", "shorter", "half", "tiny", "little"],
+  };
+
+  let hits = 0;
+  const matched = [];
+  for (const [concept, words] of Object.entries(keywords)) {
+    if (words.some(w => text.includes(w))) {
+      hits++;
+      matched.push(concept);
+    }
+  }
+
+  if (hits >= 3) {
+    return { score: 3, feedback: "🌟 Excellent thinking! You identified that smaller steps create a smoother, more accurate path with more points. That's exactly what happens — the approximation gets closer to the true curve." };
+  } else if (hits >= 2) {
+    return { score: 2, feedback: "👍 Great insight! You're on the right track. Smaller step sizes do make the path " +
+      (!matched.includes("smooth") ? "smoother and " : "") +
+      (!matched.includes("accurate") ? "more accurate. " : "") +
+      (!matched.includes("moreSteps") ? "We also get more points to plot. " : "") +
+      "The key idea is that smaller h means the straight-line segments better follow the actual curve." };
+  } else if (hits >= 1) {
+    return { score: 1, feedback: "👌 Good start! You've noticed one important aspect. Think also about: Does the path get smoother or more jagged? Does it stay closer to the real curve? How many points will we plot?" };
+  } else {
+    return { score: 0, feedback: "🤔 Interesting thought! Here's a hint: when we take smaller steps, we get more points and the path becomes smoother and closer to the actual curve. See if you notice that in Stage 2!" };
+  }
+}
+
+submitReflectionBtn.addEventListener("click", () => {
+  const response = studentReflection.value.trim();
+  if (!response) {
+    reflectionFeedback.className = "reflection-feedback error";
+    reflectionFeedback.textContent = "Please type your thoughts before submitting.";
+    return;
+  }
+  const result = evaluateReflection(response);
+  reflectionFeedback.className = "reflection-feedback";
+  reflectionFeedback.textContent = result.feedback;
+  submitReflectionBtn.classList.add("hidden");
+  studentReflection.disabled = true;
+  nextStageBtn.classList.remove("hidden");
+});
 
 // ── Event Listeners ─────────────────────────────────────
 resetBtn.addEventListener("click", resetAll);
