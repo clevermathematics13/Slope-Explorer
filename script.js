@@ -31,6 +31,10 @@ function r(v) { return Math.round(v * 10000) / 10000; }
 // Slope preview line: { x, y, slope } or null
 let slopePreview = null;
 
+// Trace animation: { fromX, fromY, curX, curY } or null
+let traceSegment = null;
+let animating = false;
+
 // ── Chart Setup ─────────────────────────────────────────
 const slopeChart = new Chart(ctx, {
   type: "scatter",
@@ -111,7 +115,6 @@ function updateChart() {
   // Slope preview dashed line (shown after m_n is entered, before y_n)
   if (slopePreview) {
     const sp = slopePreview;
-    // Extend the line from the current point to the right edge of the visible graph
     const xEnd = Math.max(5, ...path.map(p => p.x)) + 4;
     const yEnd = sp.y + sp.slope * (xEnd - sp.x);
     datasets.push({
@@ -121,6 +124,22 @@ function updateChart() {
       borderWidth: 2,
       borderDash: [6, 4],
       pointRadius: 0,
+      showLine: true
+    });
+  }
+
+  // Trace animation segment (solid line growing from old point toward new point)
+  if (traceSegment) {
+    datasets.push({
+      label: "Trace",
+      data: [
+        { x: traceSegment.fromX, y: traceSegment.fromY },
+        { x: traceSegment.curX, y: traceSegment.curY }
+      ],
+      borderColor: "#38bdf8",
+      borderWidth: 3,
+      pointRadius: [0, 5],
+      backgroundColor: ["transparent", "#38bdf8"],
       showLine: true
     });
   }
@@ -223,6 +242,7 @@ function createInput(which) {
 
 // ── Validation ──────────────────────────────────────────
 function validateEntry(input, which) {
+  if (animating) return;  // wait for trace animation to finish
   const val = parseFloat(input.value);
   if (Number.isNaN(val)) {
     showFeedback("Enter a number.", "error");
@@ -266,7 +286,7 @@ function validateEntry(input, which) {
     }
     if (which === "y") {
       rowData[currentRow].y = expected;
-      // Clear slope preview — the real segment will replace it
+      // Clear slope preview — animate trace to the new point
       slopePreview = null;
     }
 
@@ -275,31 +295,38 @@ function validateEntry(input, which) {
     currentCol++;
 
     if (currentCol > 2) {
-      // Row complete — add point and move on
-      path.push({ x: rowData[currentRow].x, y: rowData[currentRow].y });
-      updateChart();
-      hideOverlay();
+      // Row complete — animate trace along the slope, then finalize
+      const fromPt = path[path.length - 1];
+      const toPt = { x: rowData[currentRow].x, y: rowData[currentRow].y };
+      animateSegment(fromPt, toPt, () => {
+        path.push(toPt);
+        traceSegment = null;
+        updateChart();
+        hideOverlay();
 
-      const stepsNeeded = stages[currentStage].stepsNeeded;
-      const stepsCompleted = path.length - 1;
+        const stepsNeeded = stages[currentStage].stepsNeeded;
+        const stepsCompleted = path.length - 1;
 
-      if (stepsCompleted >= stepsNeeded) {
-        // Stage complete
-        if (currentStage < stages.length - 1) {
-          showFeedback(`🎉 Stage complete! You plotted ${stepsNeeded} steps with h = ${stepSize}.`, "success");
-          reflectionSec.classList.remove("hidden");
-        } else {
-          showFeedback("🏆 Challenge complete! Both stages done.", "success");
+        if (stepsCompleted >= stepsNeeded) {
+          if (currentStage < stages.length - 1) {
+            showFeedback(`🎉 Stage complete! You plotted ${stepsNeeded} steps with h = ${stepSize}.`, "success");
+            reflectionSec.classList.remove("hidden");
+          } else {
+            showFeedback("🏆 Challenge complete! Both stages done.", "success");
+          }
+          currentRow++;
+          currentCol = 0;
+          buildTable();
+          updatePrompt();
+          return;
         }
+
         currentRow++;
         currentCol = 0;
         buildTable();
         updatePrompt();
-        return;
-      }
-
-      currentRow++;
-      currentCol = 0;
+      });
+      return;
     }
 
     buildTable();
@@ -318,6 +345,86 @@ function validateEntry(input, which) {
     }
     showFeedback(`❌ Not quite.${hint}`, "error");
   }
+}
+
+// ── Trace Animation ─────────────────────────────────────
+function animateSegment(from, to, onComplete) {
+  animating = true;
+  const duration = 600; // ms
+  const startTime = performance.now();
+
+  function tick(now) {
+    const t = Math.min((now - startTime) / duration, 1);
+    // Ease-out quad
+    const ease = t * (2 - t);
+    traceSegment = {
+      fromX: from.x,
+      fromY: from.y,
+      curX: from.x + (to.x - from.x) * ease,
+      curY: from.y + (to.y - from.y) * ease
+    };
+    // Use Chart.js update with no animation to avoid flicker
+    updateChartRaw();
+
+    if (t < 1) {
+      requestAnimationFrame(tick);
+    } else {
+      animating = false;
+      onComplete();
+    }
+  }
+
+  requestAnimationFrame(tick);
+}
+
+// Fast chart update without Chart.js built-in animation (for smooth RAF loop)
+function updateChartRaw() {
+  const datasets = [];
+
+  if (path.length >= 2) {
+    datasets.push({
+      label: "Path",
+      data: path.map(p => ({ x: p.x, y: p.y })),
+      borderColor: "#38bdf8", backgroundColor: "#38bdf8",
+      borderWidth: 2, pointRadius: 6, pointHoverRadius: 8, showLine: true
+    });
+  }
+
+  datasets.push({
+    label: "Points",
+    data: path.map(p => ({ x: p.x, y: p.y })),
+    backgroundColor: "#38bdf8", pointRadius: 7, pointHoverRadius: 9, showLine: false
+  });
+
+  for (let i = 0; i < path.length - 1; i++) {
+    const p1 = path[i], p2 = path[i + 1];
+    datasets.push({
+      data: [{ x: p1.x, y: p1.y }, { x: p2.x, y: p1.y }],
+      borderColor: "#4ade80", borderWidth: 2, borderDash: [4, 3],
+      pointRadius: 0, showLine: true
+    });
+    datasets.push({
+      data: [{ x: p2.x, y: p1.y }, { x: p2.x, y: p2.y }],
+      borderColor: "#f87171", borderWidth: 2, borderDash: [4, 3],
+      pointRadius: 0, showLine: true
+    });
+  }
+
+  if (traceSegment) {
+    datasets.push({
+      label: "Trace",
+      data: [
+        { x: traceSegment.fromX, y: traceSegment.fromY },
+        { x: traceSegment.curX, y: traceSegment.curY }
+      ],
+      borderColor: "#38bdf8", borderWidth: 3,
+      pointRadius: [0, 5], backgroundColor: ["transparent", "#38bdf8"],
+      showLine: true
+    });
+  }
+
+  slopeChart.data.datasets = datasets;
+  slopeChart.update("none");
 }
 
 function shakInput(input) {
