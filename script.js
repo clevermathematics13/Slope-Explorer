@@ -4,6 +4,7 @@ const nextYInput      = document.getElementById("next-y");
 const checkBtn        = document.getElementById("checkPathBtn");
 const resetBtn        = document.getElementById("resetBtn");
 const locationEl      = document.getElementById("current-location");
+const currentNEl      = document.getElementById("current-n");
 const ruleEl          = document.getElementById("current-rule");
 const stepSizeEl      = document.getElementById("step-size");
 const feedbackBox     = document.getElementById("ai-feedback-box");
@@ -148,10 +149,11 @@ function updateTable() {
 // ── Update the info display ─────────────────────────────
 function updateDisplay() {
   const last = path[path.length - 1];
+  const n = path.length - 1;
+  currentNEl.textContent = n;
   locationEl.textContent = `(${last.x}, ${last.y})`;
   stepSizeEl.textContent = stepSize;
   ruleEl.innerHTML = "m<sub>n</sub> = x<sub>n</sub> + 1";
-  // Clarification: the slope at each point = (that point's x-value) + 1
 }
 
 // ── Check the student's step ────────────────────────────

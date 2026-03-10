@@ -25,9 +25,10 @@
       <h2>The Slope Machine</h2>
       
       <div class="machine-display">
-        <p><strong>Current Location:</strong> <span id="current-location" style="font-family: 'Fira Code', monospace; color: #38bdf8;">(0, 0)</span></p>
-        <p><strong>Rule:</strong> <span id="current-rule" style="font-family: 'Fira Code', monospace; color: #facc15;">m<sub>n</sub> = x<sub>n</sub> + 1</span></p>
-        <p><strong>Target Step Size:</strong> Move right by <span id="step-size" style="font-family: 'Fira Code', monospace; color: #38bdf8;">1</span></p>
+        <p><strong>n = </strong><span id="current-n" style="font-family: 'Fira Code', monospace; color: #38bdf8;">0</span>&nbsp;&nbsp; <strong>(x<sub>n</sub>, y<sub>n</sub>) = </strong><span id="current-location" style="font-family: 'Fira Code', monospace; color: #38bdf8;">(0, 0)</span></p>
+        <p><strong>Rule 1:</strong> <span id="current-rule" style="font-family: 'Fira Code', monospace; color: #facc15;">m<sub>n</sub> = x<sub>n</sub> + 1</span></p>
+        <p><strong>Rule 2:</strong> <span style="font-family: 'Fira Code', monospace; color: #facc15;">y<sub>n</sub> = y<sub>n−1</sub> + m<sub>n−1</sub> · h</span></p>
+        <p><strong>Step size:</strong> <span style="font-family: 'Fira Code', monospace; color: #94a3b8;">h = </span><span id="step-size" style="font-family: 'Fira Code', monospace; color: #38bdf8;">1</span></p>
       </div>
 
       <hr>
