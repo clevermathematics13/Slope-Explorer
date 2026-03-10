@@ -21,7 +21,7 @@ let currentStage = 0;
 let stepSize = stages[0].stepSize;
 let path = [{ x: 0, y: 0 }];     // confirmed points
 let currentRow = 1;               // row we're filling (0 is pre-filled)
-let currentCol = 0;               // 0 = x_n, 1 = m_n, 2 = y_n
+let currentCol = 0;               // 0 = x_n, 1 = y_n, 2 = m_n
 
 function slopeAt(x) { return x + 1; }
 
@@ -130,6 +130,7 @@ function updateChart() {
 
   // Trace animation segment (solid line growing from old point toward new point)
   if (traceSegment) {
+    // Blue trace line (hypotenuse)
     datasets.push({
       label: "Trace",
       data: [
@@ -141,6 +142,24 @@ function updateChart() {
       pointRadius: [0, 5],
       backgroundColor: ["transparent", "#38bdf8"],
       showLine: true
+    });
+    // Green run (horizontal)
+    datasets.push({
+      data: [
+        { x: traceSegment.fromX, y: traceSegment.fromY },
+        { x: traceSegment.curX, y: traceSegment.fromY }
+      ],
+      borderColor: "#4ade80", borderWidth: 2, borderDash: [4, 3],
+      pointRadius: 0, showLine: true
+    });
+    // Red rise (vertical)
+    datasets.push({
+      data: [
+        { x: traceSegment.curX, y: traceSegment.fromY },
+        { x: traceSegment.curX, y: traceSegment.curY }
+      ],
+      borderColor: "#f87171", borderWidth: 2, borderDash: [4, 3],
+      pointRadius: 0, showLine: true
     });
   }
 
@@ -163,10 +182,10 @@ let rowData = [];   // rowData[n] = { x, m, y } once confirmed
 function buildTable() {
   tableBody.innerHTML = "";
 
-  // Row 0 — always pre-filled
+  // Row 0 — always pre-filled (n, x, y, m)
   const tr0 = document.createElement("tr");
   tr0.classList.add("completed-row");
-  tr0.innerHTML = `<td>0</td><td>0</td><td>${slopeAt(0)}</td><td>0</td>`;
+  tr0.innerHTML = `<td>0</td><td>0</td><td>0</td><td>${slopeAt(0)}</td>`;
   tableBody.appendChild(tr0);
 
   // Confirmed rows 1..currentRow-1
@@ -174,7 +193,7 @@ function buildTable() {
     const d = rowData[n];
     const tr = document.createElement("tr");
     tr.classList.add("completed-row");
-    tr.innerHTML = `<td>${n}</td><td class="cell-done">${d.x}</td><td class="cell-done">${d.m}</td><td class="cell-done">${d.y}</td>`;
+    tr.innerHTML = `<td>${n}</td><td class="cell-done">${d.x}</td><td class="cell-done">${d.y}</td><td class="cell-done">${d.m}</td>`;
     tableBody.appendChild(tr);
   }
 
@@ -189,7 +208,7 @@ function buildTable() {
     tdN.textContent = currentRow;
     tr.appendChild(tdN);
 
-    // x cell
+    // x cell (col 0)
     const tdX = document.createElement("td");
     if (currentCol === 0) {
       tdX.appendChild(createInput("x"));
@@ -199,24 +218,24 @@ function buildTable() {
     }
     tr.appendChild(tdX);
 
-    // m cell
-    const tdM = document.createElement("td");
-    if (currentCol === 1) {
-      tdM.appendChild(createInput("m"));
-    } else if (currentCol > 1) {
-      tdM.textContent = rowData[currentRow]?.m ?? "";
-      if (rowData[currentRow]?.m !== undefined) tdM.classList.add("cell-done");
-    }
-    tr.appendChild(tdM);
-
-    // y cell
+    // y cell (col 1)
     const tdY = document.createElement("td");
-    if (currentCol === 2) {
+    if (currentCol === 1) {
       tdY.appendChild(createInput("y"));
-    } else if (currentCol > 2) {
+    } else if (currentCol > 1) {
       tdY.textContent = rowData[currentRow]?.y ?? "";
+      if (rowData[currentRow]?.y !== undefined) tdY.classList.add("cell-done");
     }
     tr.appendChild(tdY);
+
+    // m cell (col 2)
+    const tdM = document.createElement("td");
+    if (currentCol === 2) {
+      tdM.appendChild(createInput("m"));
+    } else if (currentCol > 2) {
+      tdM.textContent = rowData[currentRow]?.m ?? "";
+    }
+    tr.appendChild(tdM);
 
     tableBody.appendChild(tr);
   }
@@ -256,18 +275,15 @@ function validateEntry(input, which) {
   if (which === "x") {
     expected = r(prev.x + stepSize);
     label = `x<sub>${currentRow}</sub>`;
-  } else if (which === "m") {
-    const xn = rowData[currentRow].x;
-    expected = r(slopeAt(xn));
-    label = `m<sub>${currentRow}</sub>`;
-  } else {
-    // y_n  (this IS the new y value: y_{n} = y_{n-1} + m_{n-1} * h)
-    // But wait — in the table, the columns are n, x_n, m_n, y_n.
-    // The Euler formula is: y_{n+1} = y_n + m_n · h
-    // So for row n: y_n is the y value at step n.
+  } else if (which === "y") {
     // y_n = y_{n-1} + m_{n-1} · h  (using previous row's slope)
     expected = r(prev.y + slopeAt(prev.x) * stepSize);
     label = `y<sub>${currentRow}</sub>`;
+  } else {
+    // m_n = x_n + 1
+    const xn = rowData[currentRow].x;
+    expected = r(slopeAt(xn));
+    label = `m<sub>${currentRow}</sub>`;
   }
 
   if (Math.abs(val - expected) < 0.01) {
@@ -282,15 +298,14 @@ function validateEntry(input, which) {
       slopePreview = null;
       updateChart();
     }
-    if (which === "m") {
-      rowData[currentRow].m = expected;
-      // Show slope preview using m_{n-1} (slope at current point that determines the step)
-      const prev2 = path[path.length - 1];
-      slopePreview = { x: prev2.x, y: prev2.y, slope: slopeAt(prev2.x) };
-      updateChart();
-    }
     if (which === "y") {
       rowData[currentRow].y = expected;
+    }
+    if (which === "m") {
+      rowData[currentRow].m = expected;
+      // Show slope preview from new point (x_n, y_n) with slope m_n
+      slopePreview = { x: rowData[currentRow].x, y: rowData[currentRow].y, slope: expected };
+      updateChart();
     }
 
     showFeedback(`✅ ${label} = ${expected}`, "success");
@@ -340,11 +355,11 @@ function validateEntry(input, which) {
     let hint = "";
     if (which === "x") {
       hint = ` Hint: x<sub>${currentRow}</sub> = x<sub>${currentRow - 1}</sub> + h = ${prev.x} + ${stepSize}`;
-    } else if (which === "m") {
-      hint = ` Hint: m<sub>${currentRow}</sub> = x<sub>${currentRow}</sub> + 1 = ${rowData[currentRow].x} + 1`;
-    } else {
+    } else if (which === "y") {
       const prevSlope = slopeAt(prev.x);
       hint = ` Hint: y<sub>${currentRow}</sub> = y<sub>${currentRow - 1}</sub> + m<sub>${currentRow - 1}</sub> · h = ${prev.y} + ${prevSlope} × ${stepSize}`;
+    } else {
+      hint = ` Hint: m<sub>${currentRow}</sub> = x<sub>${currentRow}</sub> + 1 = ${rowData[currentRow].x} + 1`;
     }
     showFeedback(`❌ Not quite.${hint}`, "error");
   }
@@ -435,6 +450,22 @@ function updateChartRaw() {
       pointRadius: [0, 5], backgroundColor: ["transparent", "#38bdf8"],
       showLine: true
     });
+    datasets.push({
+      data: [
+        { x: traceSegment.fromX, y: traceSegment.fromY },
+        { x: traceSegment.curX, y: traceSegment.fromY }
+      ],
+      borderColor: "#4ade80", borderWidth: 2, borderDash: [4, 3],
+      pointRadius: 0, showLine: true
+    });
+    datasets.push({
+      data: [
+        { x: traceSegment.curX, y: traceSegment.fromY },
+        { x: traceSegment.curX, y: traceSegment.curY }
+      ],
+      borderColor: "#f87171", borderWidth: 2, borderDash: [4, 3],
+      pointRadius: 0, showLine: true
+    });
   }
 
   slopeChart.data.datasets = datasets;
@@ -462,9 +493,9 @@ function updatePrompt() {
   if (currentCol === 0) {
     promptText.innerHTML = `Enter x${sub} in the table →`;
   } else if (currentCol === 1) {
-    promptText.innerHTML = `Now enter m${sub} (the slope) →`;
-  } else {
     promptText.innerHTML = `Now enter y${sub} →`;
+  } else {
+    promptText.innerHTML = `Now enter m${sub} (the slope) →`;
   }
 }
 
@@ -534,6 +565,7 @@ resetBtn.addEventListener("click", resetAll);
 nextStageBtn.addEventListener("click", advanceStage);
 
 // ── Initialize ──────────────────────────────────────────
+slopePreview = { x: 0, y: 0, slope: slopeAt(0) };
 buildTable();
 updateChart();
 updatePrompt();
