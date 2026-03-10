@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Path Builder Challenge</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fira+Code&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <nav class="lesson-nav">
+    <a href="index.html">1 — Intro</a>
+    <span class="sep">›</span>
+    <a href="slope-function.html">2 — The Slope Machine</a>
+    <span class="sep">›</span>
+    <a href="path-builder.html" class="active">3 — Path Builder</a>
+  </nav>
+
+  <header>
+    <h1>🤖 The Path Builder Challenge</h1>
+    <p class="subtitle">Fill in the table one value at a time to build the Euler approximation.</p>
+  </header>
+
+  <main>
+    <!-- Left: Rules -->
+    <section class="rules-panel">
+      <div class="machine-display">
+        <p style="color: #94a3b8; font-weight: 600; margin-bottom: 0.3rem;">We are estimating:</p>
+        <p><span style="font-family: 'Fira Code', monospace; color: #38bdf8;">Δy/Δx = y, &nbsp; f(0) = 1</span></p>
+        <p style="color: #94a3b8; font-weight: 600; margin-top: 0.4rem; margin-bottom: 0.3rem;">Formulae</p>
+        <p><span style="font-family: 'Fira Code', monospace; color: #facc15;">m<sub>n</sub> = y<sub>n</sub></span></p>
+        <p><span style="font-family: 'Fira Code', monospace; color: #facc15;">y<sub>n+1</sub> = y<sub>n</sub> + m<sub>n</sub> · h</span></p>
+        <p><strong>Step size:</strong> <span style="font-family: 'Fira Code', monospace; color: #94a3b8;">h = </span><span id="step-size" style="font-family: 'Fira Code', monospace; color: #38bdf8;">1</span></p>
+      </div>
+
+      <button id="resetBtn" class="btn secondary">Start Over</button>
+    </section>
+
+    <!-- Center: Table + Prompt/Feedback -->
+    <section class="table-panel">
+      <div class="table-scroll">
+        <table id="values-table">
+          <thead>
+            <tr><th>n</th><th>x<sub>n</sub></th><th>y<sub>n</sub></th><th>m<sub>n</sub></th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="table-bottom">
+        <div id="prompt-box" class="prompt-box">
+          <p id="prompt-text">Enter x<sub>1</sub> in the table →</p>
+        </div>
+
+        <div id="feedback-box" class="feedback-box hidden">
+          <p id="feedback-text"></p>
+        </div>
+
+        <div id="reflection-section" class="hidden">
+          <h3>Stage Complete!</h3>
+          <p>What do you think will happen to the path when we use h = 0.5 instead of h = 1?</p>
+          <textarea id="student-reflection" rows="3" placeholder="Type your thoughts..."></textarea>
+          <button id="submit-reflection-btn" class="btn primary">Submit</button>
+          <div id="reflection-feedback" class="hidden"></div>
+          <button id="next-stage-btn" class="btn primary hidden">Next Stage →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right: Graph -->
+    <section class="graph-panel">
+      <div id="stage-overlay" class="stage-overlay hidden">
+        <p id="overlay-text"></p>
+      </div>
+      <canvas id="slopeChart"></canvas>
+    </section>
+  </main>
+
+  <footer>
+    <p>Built for learning &middot; Grade 9 Enrichment</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

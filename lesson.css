@@ -1,0 +1,328 @@
+/* ===== Shared Lesson Styles ===== */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  background: #0f172a;
+  color: #e2e8f0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== Nav Bar ===== */
+.lesson-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.5rem;
+  background: #1e293b;
+  border-bottom: 1px solid #334155;
+  font-size: 0.78rem;
+}
+
+.lesson-nav a {
+  color: #94a3b8;
+  text-decoration: none;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.35rem;
+  transition: background 0.2s, color 0.2s;
+}
+
+.lesson-nav a:hover {
+  background: #334155;
+  color: #e2e8f0;
+}
+
+.lesson-nav a.active {
+  background: #38bdf8;
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.lesson-nav .sep {
+  color: #475569;
+}
+
+/* ===== Header ===== */
+.lesson-header {
+  text-align: center;
+  padding: 2rem 1rem 1rem;
+}
+
+.lesson-header h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #38bdf8;
+  margin-bottom: 0.4rem;
+}
+
+.lesson-header .subtitle {
+  font-size: 0.95rem;
+  color: #94a3b8;
+}
+
+/* ===== Content Container ===== */
+.lesson-content {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 1rem 1.5rem 3rem;
+  flex: 1;
+}
+
+/* ===== Sections ===== */
+.lesson-section {
+  margin-bottom: 2rem;
+}
+
+.lesson-section h2 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #facc15;
+  margin-bottom: 0.6rem;
+}
+
+.lesson-section p {
+  font-size: 0.92rem;
+  line-height: 1.7;
+  margin-bottom: 0.75rem;
+  color: #cbd5e1;
+}
+
+.lesson-section strong {
+  color: #e2e8f0;
+}
+
+/* ===== Concept Cards ===== */
+.concept-card {
+  background: #1e293b;
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+  border-left: 4px solid #38bdf8;
+}
+
+.concept-card.yellow {
+  border-left-color: #facc15;
+}
+
+.concept-card.green {
+  border-left-color: #4ade80;
+}
+
+.concept-card.purple {
+  border-left-color: #a78bfa;
+}
+
+.concept-card h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+  color: #e2e8f0;
+}
+
+.concept-card p {
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: #94a3b8;
+  margin-bottom: 0.4rem;
+}
+
+.concept-card p:last-child {
+  margin-bottom: 0;
+}
+
+/* ===== Math Display ===== */
+.math-display {
+  font-family: "Fira Code", monospace;
+  font-size: 1.1rem;
+  color: #38bdf8;
+  text-align: center;
+  padding: 0.75rem;
+  margin: 0.75rem 0;
+  background: #0f172a;
+  border-radius: 0.5rem;
+}
+
+.math-display .yellow {
+  color: #facc15;
+}
+
+.math-display .green {
+  color: #4ade80;
+}
+
+.math-display .purple {
+  color: #a78bfa;
+}
+
+/* ===== Interactive Boxes ===== */
+.interactive-box {
+  background: #1e293b;
+  border: 2px solid #334155;
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  margin: 1rem 0;
+}
+
+.interactive-box h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #facc15;
+  margin-bottom: 0.6rem;
+}
+
+.interactive-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.interactive-row label {
+  font-family: "Fira Code", monospace;
+  font-size: 0.88rem;
+  color: #94a3b8;
+}
+
+.interactive-row input {
+  width: 4rem;
+  padding: 0.3rem 0.4rem;
+  border: 2px solid #38bdf8;
+  border-radius: 0.35rem;
+  background: #0f172a;
+  color: #f8fafc;
+  font-family: "Fira Code", monospace;
+  font-size: 0.9rem;
+  text-align: center;
+  outline: none;
+}
+
+.interactive-row input:focus {
+  border-color: #facc15;
+  box-shadow: 0 0 0 2px rgba(250, 204, 21, 0.25);
+}
+
+.interactive-result {
+  font-family: "Fira Code", monospace;
+  font-size: 0.9rem;
+  padding: 0.5rem 0.75rem;
+  background: #0f172a;
+  border-radius: 0.4rem;
+  color: #4ade80;
+  min-height: 1.8rem;
+}
+
+/* ===== Slope Demo Canvas ===== */
+.slope-canvas-wrap {
+  width: 100%;
+  max-width: 500px;
+  margin: 0.75rem auto;
+  aspect-ratio: 1;
+  background: #0f172a;
+  border-radius: 0.5rem;
+  position: relative;
+}
+
+.slope-canvas-wrap canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* ===== Vocab list ===== */
+.vocab-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.vocab-list li {
+  background: #1e293b;
+  padding: 0.6rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.vocab-list li strong {
+  color: #38bdf8;
+}
+
+/* ===== Next Lesson Button ===== */
+.next-btn {
+  display: inline-block;
+  margin-top: 1rem;
+  padding: 0.6rem 1.5rem;
+  background: #38bdf8;
+  color: #0f172a;
+  font-family: "Inter", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.next-btn:hover {
+  background: #7dd3fc;
+}
+
+.next-btn:active {
+  transform: scale(0.97);
+}
+
+/* ===== Footer ===== */
+.lesson-footer {
+  text-align: center;
+  padding: 0.75rem;
+  font-size: 0.7rem;
+  color: #475569;
+}
+
+/* ===== Step-through sections ===== */
+.step-reveal {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.step-reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ===== Analogy callout ===== */
+.analogy {
+  background: rgba(167, 139, 250, 0.1);
+  border: 1px solid #a78bfa;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  margin: 0.75rem 0;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: #c4b5fd;
+}
+
+.analogy strong {
+  color: #a78bfa;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 600px) {
+  .lesson-content {
+    padding: 1rem;
+  }
+  .lesson-header h1 {
+    font-size: 1.4rem;
+  }
+}

@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 2 — The Slope Machine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fira+Code&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="lesson.css">
+  <style>
+    /* Slope machine visual */
+    .machine-graphic {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      margin: 1rem 0;
+      flex-wrap: wrap;
+    }
+    .machine-box {
+      background: #334155;
+      border: 2px solid #facc15;
+      border-radius: 0.75rem;
+      padding: 0.75rem 1.25rem;
+      text-align: center;
+      min-width: 140px;
+    }
+    .machine-box .label {
+      font-size: 0.72rem;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.3rem;
+    }
+    .machine-box .value {
+      font-family: "Fira Code", monospace;
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+    .machine-arrow {
+      font-size: 1.5rem;
+      color: #facc15;
+    }
+    .machine-input-box {
+      border-color: #38bdf8;
+    }
+    .machine-input-box .value {
+      color: #38bdf8;
+    }
+    .machine-output-box {
+      border-color: #4ade80;
+    }
+    .machine-output-box .value {
+      color: #4ade80;
+    }
+    .machine-rule-box .value {
+      color: #facc15;
+      font-size: 1rem;
+    }
+
+    /* Try-it table */
+    .try-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: "Fira Code", monospace;
+      font-size: 0.9rem;
+      margin: 0.75rem 0;
+    }
+    .try-table th {
+      background: #1e293b;
+      color: #94a3b8;
+      font-weight: 600;
+      padding: 0.4rem 0.5rem;
+      border-bottom: 2px solid #334155;
+      text-align: center;
+    }
+    .try-table td {
+      padding: 0.4rem 0.5rem;
+      text-align: center;
+      border-bottom: 1px solid #334155;
+      color: #e2e8f0;
+    }
+    .try-table input {
+      width: 4rem;
+      padding: 0.25rem 0.3rem;
+      border: 2px solid #38bdf8;
+      border-radius: 0.35rem;
+      background: #0f172a;
+      color: #f8fafc;
+      font-family: "Fira Code", monospace;
+      font-size: 0.9rem;
+      text-align: center;
+      outline: none;
+    }
+    .try-table input:focus {
+      border-color: #facc15;
+      box-shadow: 0 0 0 2px rgba(250, 204, 21, 0.25);
+    }
+    .try-table input.correct {
+      border-color: #4ade80;
+      color: #4ade80;
+    }
+    .try-table input.wrong {
+      border-color: #f87171;
+      animation: shake 0.3s ease;
+    }
+    .try-table .check-cell {
+      font-size: 1rem;
+    }
+
+    /* Slope field canvas */
+    .field-wrap {
+      width: 100%;
+      max-width: 460px;
+      aspect-ratio: 1;
+      margin: 1rem auto;
+      border-radius: 0.5rem;
+      overflow: hidden;
+    }
+    .field-wrap canvas {
+      width: 100% !important;
+      height: 100% !important;
+      display: block;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-4px); }
+      75% { transform: translateX(4px); }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="lesson-nav">
+    <a href="index.html">1 — Intro</a>
+    <span class="sep">›</span>
+    <a href="slope-function.html" class="active">2 — The Slope Machine</a>
+    <span class="sep">›</span>
+    <a href="path-builder.html">3 — Path Builder</a>
+  </nav>
+
+  <header class="lesson-header">
+    <h1>⚙️ The Slope Machine</h1>
+    <p class="subtitle">Understanding a function that outputs slope instead of height</p>
+  </header>
+
+  <div class="lesson-content">
+
+    <!-- Section 1: The Unusual Function -->
+    <section class="lesson-section">
+      <h2>A New Kind of Function</h2>
+      <p>Most functions you've seen take an <strong>x-value</strong> and give back a <strong>y-value</strong>:</p>
+      <div class="math-display">f(x) = 2x + 3 → <span style="color:#94a3b8">input x, output a height</span></div>
+      <p>But our differential equation is different. It's a rule that takes a <strong>point</strong> and gives back a <strong>slope</strong>:</p>
+      <div class="math-display"><span class="yellow">Δy/Δx = y</span> → <span style="color:#94a3b8">input a point, output a slope</span></div>
+      <p>This might feel weird at first — and that's okay! Let's build intuition with a machine metaphor.</p>
+    </section>
+
+    <!-- Section 2: The Machine -->
+    <section class="lesson-section">
+      <h2>Meet the Slope Machine</h2>
+      <p>Think of the slope rule as a <strong>machine</strong>. You feed it a point (a y-value), and it tells you the slope at that location.</p>
+
+      <div class="machine-graphic">
+        <div class="machine-box machine-input-box">
+          <div class="label">You feed in</div>
+          <div class="value">y-value</div>
+        </div>
+        <div class="machine-arrow">→</div>
+        <div class="machine-box machine-rule-box">
+          <div class="label">The machine (rule)</div>
+          <div class="value">slope = y</div>
+        </div>
+        <div class="machine-arrow">→</div>
+        <div class="machine-box machine-output-box">
+          <div class="label">It outputs</div>
+          <div class="value">slope</div>
+        </div>
+      </div>
+
+      <p>Our particular machine has a very simple rule: <strong>the slope equals the y-value</strong>. That's it!</p>
+
+      <div class="concept-card">
+        <h3>What does this mean in plain English?</h3>
+        <p>When the curve is <strong>high up</strong> (big y), it's <strong>steep</strong> (big slope). When the curve is <strong>low</strong> (small y), it's <strong>gentle</strong> (small slope). The higher you are, the faster you climb.</p>
+      </div>
+    </section>
+
+    <!-- Section 3: Try the Machine -->
+    <section class="lesson-section">
+      <h2>🧪 Try the Machine</h2>
+      <p>Feed the slope machine different y-values. Type the slope it should output, then press <strong>Enter</strong>.</p>
+
+      <div class="interactive-box">
+        <h3>Rule: slope = y</h3>
+        <table class="try-table" id="try-table">
+          <thead>
+            <tr>
+              <th>Point</th>
+              <th>y-value</th>
+              <th>Slope = ?</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr data-answer="1">
+              <td>(0, 1)</td>
+              <td>1</td>
+              <td><input type="text" inputmode="decimal" placeholder="?"></td>
+              <td class="check-cell"></td>
+            </tr>
+            <tr data-answer="2">
+              <td>(1, 2)</td>
+              <td>2</td>
+              <td><input type="text" inputmode="decimal" placeholder="?"></td>
+              <td class="check-cell"></td>
+            </tr>
+            <tr data-answer="4">
+              <td>(2, 4)</td>
+              <td>4</td>
+              <td><input type="text" inputmode="decimal" placeholder="?"></td>
+              <td class="check-cell"></td>
+            </tr>
+            <tr data-answer="0.5">
+              <td>(3, 0.5)</td>
+              <td>0.5</td>
+              <td><input type="text" inputmode="decimal" placeholder="?"></td>
+              <td class="check-cell"></td>
+            </tr>
+            <tr data-answer="10">
+              <td>(1, 10)</td>
+              <td>10</td>
+              <td><input type="text" inputmode="decimal" placeholder="?"></td>
+              <td class="check-cell"></td>
+            </tr>
+          </tbody>
+        </table>
+        <div id="try-feedback" class="interactive-result" style="margin-top:0.5rem;"></div>
+      </div>
+    </section>
+
+    <!-- Section 4: What Pattern Do You See? -->
+    <section class="lesson-section">
+      <h2>🔍 What Did You Notice?</h2>
+
+      <div class="concept-card yellow">
+        <h3>The Pattern</h3>
+        <p>Every time, the slope is <strong>exactly the y-value</strong>. It doesn't matter what x is — only the height matters.</p>
+        <p>At y = 1, the slope is gentle (1). At y = 10, it's very steep (10). At y = 0.5, it's barely rising (0.5).</p>
+      </div>
+
+      <div class="analogy">
+        <strong>🏔️ Think of it this way:</strong> Imagine a hill where the steepness depends on your altitude. At sea level, the ground is nearly flat. But the higher you climb, the steeper it gets —– like a mountain that curves up sharply the higher you go. That's exactly what Δy/Δx = y describes.
+      </div>
+    </section>
+
+    <!-- Section 5: Slope Field Visualization -->
+    <section class="lesson-section">
+      <h2>👀 See the Slopes</h2>
+      <p>Below, every short line segment shows the slope the machine gives at that point. This is called a <strong>slope field</strong>. Notice how the segments get steeper as y increases.</p>
+      <p style="font-size: 0.82rem; color: #94a3b8;">Hover over any point to see its slope value.</p>
+      <div class="field-wrap">
+        <canvas id="slopeField"></canvas>
+      </div>
+      <p>The mystery curve (the one we're trying to approximate) follows these tiny direction arrows perfectly. Euler's method approximates that path by taking steps along them.</p>
+    </section>
+
+    <!-- Section 6: Why This Matters -->
+    <section class="lesson-section">
+      <h2>Why This Matters</h2>
+      <p>In the Path Builder Challenge, you'll use this slope machine at every step:</p>
+
+      <div class="concept-card green">
+        <h3>The Euler Method Loop</h3>
+        <p><strong>1.</strong> Look at your current point → read its y-value</p>
+        <p><strong>2.</strong> Feed y into the slope machine → get the slope</p>
+        <p><strong>3.</strong> Use the slope to take a step → arrive at a new point</p>
+        <p><strong>4.</strong> Repeat from step 1</p>
+      </div>
+
+      <p>The slope machine is the engine that drives every step. Now that you understand how it works, you're ready to build paths!</p>
+
+      <a href="path-builder.html" class="next-btn">Start the Path Builder Challenge →</a>
+    </section>
+
+  </div>
+
+  <footer class="lesson-footer">
+    <p>Built for learning · Grade 9 Enrichment</p>
+  </footer>
+
+  <script>
+    // ── Try-the-Machine interactive ──
+    document.querySelectorAll("#try-table tbody tr").forEach(row => {
+      const answer = parseFloat(row.dataset.answer);
+      const input = row.querySelector("input");
+      const check = row.querySelector(".check-cell");
+
+      input.addEventListener("keydown", (e) => {
+        if (e.key !== "Enter") return;
+        const val = parseFloat(input.value);
+        if (Number.isNaN(val)) return;
+
+        if (Math.abs(val - answer) < 0.01) {
+          input.classList.remove("wrong");
+          input.classList.add("correct");
+          input.disabled = true;
+          check.textContent = "✅";
+        } else {
+          input.classList.add("wrong");
+          check.textContent = "❌";
+          setTimeout(() => {
+            input.classList.remove("wrong");
+            check.textContent = "";
+          }, 600);
+        }
+
+        // Check if all done
+        const allDone = [...document.querySelectorAll("#try-table tbody input")]
+          .every(inp => inp.disabled);
+        if (allDone) {
+          document.getElementById("try-feedback").textContent =
+            "🎉 Perfect! You've mastered the slope machine. The slope always equals the y-value.";
+        }
+      });
+    });
+
+    // ── Slope Field Visualization ──
+    const canvas = document.getElementById("slopeField");
+    const ctx = canvas.getContext("2d");
+
+    function drawField() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.scale(dpr, dpr);
+
+      const W = rect.width, H = rect.height;
+
+      // World coords
+      const xMin = -0.5, xMax = 4.5, yMin = -0.5, yMax = 6;
+      const toScreenX = (x) => ((x - xMin) / (xMax - xMin)) * W;
+      const toScreenY = (y) => H - ((y - yMin) / (yMax - yMin)) * H;
+
+      // Background
+      ctx.fillStyle = "#0f172a";
+      ctx.fillRect(0, 0, W, H);
+
+      // Grid
+      ctx.strokeStyle = "#1e293b";
+      ctx.lineWidth = 1;
+      for (let x = 0; x <= 4; x++) {
+        ctx.beginPath();
+        ctx.moveTo(toScreenX(x), 0);
+        ctx.lineTo(toScreenX(x), H);
+        ctx.stroke();
+      }
+      for (let y = 0; y <= 6; y++) {
+        ctx.beginPath();
+        ctx.moveTo(0, toScreenY(y));
+        ctx.lineTo(W, toScreenY(y));
+        ctx.stroke();
+      }
+
+      // Axes
+      ctx.strokeStyle = "#475569";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(toScreenX(0), 0);
+      ctx.lineTo(toScreenX(0), H);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(0, toScreenY(0));
+      ctx.lineTo(W, toScreenY(0));
+      ctx.stroke();
+
+      // Axis labels
+      ctx.font = "12px 'Fira Code', monospace";
+      ctx.fillStyle = "#94a3b8";
+      ctx.textAlign = "center";
+      for (let x = 0; x <= 4; x++) {
+        ctx.fillText(x, toScreenX(x), toScreenY(0) + 16);
+      }
+      ctx.textAlign = "right";
+      for (let y = 0; y <= 5; y++) {
+        ctx.fillText(y, toScreenX(0) - 6, toScreenY(y) + 4);
+      }
+
+      // Slope segments
+      const segLen = 0.25;
+      for (let x = 0; x <= 4; x += 0.5) {
+        for (let y = 0; y <= 5.5; y += 0.5) {
+          if (y < 0) continue;
+          const slope = y; // our rule: slope = y
+          const angle = Math.atan(slope);
+          const dx = segLen * Math.cos(angle);
+          const dy = segLen * Math.sin(angle);
+
+          const x1 = x - dx / 2, y1 = y - dy / 2;
+          const x2 = x + dx / 2, y2 = y + dy / 2;
+
+          // Color based on steepness
+          const t = Math.min(y / 5, 1);
+          const r = Math.round(56 + t * 192);
+          const g = Math.round(189 - t * 60);
+          const b = Math.round(248 - t * 120);
+          ctx.strokeStyle = `rgb(${r},${g},${b})`;
+          ctx.lineWidth = 1.8;
+          ctx.beginPath();
+          ctx.moveTo(toScreenX(x1), toScreenY(y1));
+          ctx.lineTo(toScreenX(x2), toScreenY(y2));
+          ctx.stroke();
+        }
+      }
+
+      // Draw the exact curve e^x lightly
+      ctx.strokeStyle = "rgba(167, 139, 250, 0.4)";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      let first = true;
+      for (let x = 0; x <= 4; x += 0.05) {
+        const y = Math.exp(x);
+        if (y > yMax) break;
+        const sx = toScreenX(x), sy = toScreenY(y);
+        if (first) { ctx.moveTo(sx, sy); first = false; }
+        else ctx.lineTo(sx, sy);
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Label
+      ctx.font = "bold 11px 'Fira Code', monospace";
+      ctx.fillStyle = "rgba(167, 139, 250, 0.6)";
+      ctx.textAlign = "left";
+      const labelX = 1.5, labelY = Math.exp(1.5);
+      if (labelY < yMax) {
+        ctx.fillText("f(x) = eˣ", toScreenX(labelX) + 8, toScreenY(labelY) - 6);
+      }
+    }
+
+    drawField();
+    window.addEventListener("resize", drawField);
+
+    // Hover tooltip
+    canvas.addEventListener("mousemove", (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+      const W = rect.width, H = rect.height;
+      const xMin = -0.5, xMax = 4.5, yMin = -0.5, yMax = 6;
+      const worldX = (mx / W) * (xMax - xMin) + xMin;
+      const worldY = (1 - my / H) * (yMax - yMin) + yMin;
+      if (worldY >= 0) {
+        canvas.title = `At y = ${worldY.toFixed(1)}, slope = ${worldY.toFixed(1)}`;
+      } else {
+        canvas.title = "";
+      }
+    });
+  </script>
+
+</body>
+</html>

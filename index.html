@@ -3,82 +3,132 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Path Builder Challenge</title>
-
+  <title>Lesson 1 — What Are We Building?</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fira+Code&display=swap" rel="stylesheet">
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
-
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="lesson.css">
 </head>
 <body>
 
-  <header>
-    <h1>🤖 The Path Builder Challenge</h1>
-    <p class="subtitle">Fill in the table one value at a time to build the Euler approximation.</p>
+  <nav class="lesson-nav">
+    <a href="index.html" class="active">1 — Intro</a>
+    <span class="sep">›</span>
+    <a href="slope-function.html">2 — The Slope Machine</a>
+    <span class="sep">›</span>
+    <a href="path-builder.html">3 — Path Builder</a>
+  </nav>
+
+  <header class="lesson-header">
+    <h1>📐 What Are We Building?</h1>
+    <p class="subtitle">An introduction to approximating curves step by step</p>
   </header>
 
-  <main>
-    <!-- Left: Rules -->
-    <section class="rules-panel">
-      <div class="machine-display">
-        <p style="color: #94a3b8; font-weight: 600; margin-bottom: 0.3rem;">We are estimating:</p>
-        <p><span style="font-family: 'Fira Code', monospace; color: #38bdf8;">Δy/Δx = y, &nbsp; y(0) = 1</span></p>
-        <p style="color: #94a3b8; font-weight: 600; margin-top: 0.4rem; margin-bottom: 0.3rem;">Formulae</p>
-        <p><span style="font-family: 'Fira Code', monospace; color: #facc15;">m<sub>n</sub> = y<sub>n</sub></span></p>
-        <p><span style="font-family: 'Fira Code', monospace; color: #facc15;">y<sub>n+1</sub> = y<sub>n</sub> + m<sub>n</sub> · h</span></p>
-        <p><strong>Step size:</strong> <span style="font-family: 'Fira Code', monospace; color: #94a3b8;">h = </span><span id="step-size" style="font-family: 'Fira Code', monospace; color: #38bdf8;">1</span></p>
+  <div class="lesson-content">
+
+    <!-- Section 1: The Mystery -->
+    <section class="lesson-section">
+      <h2>The Mystery Curve</h2>
+      <p>Imagine there's a curve hiding in the coordinate plane. You can't see it — but you have two clues:</p>
+
+      <div class="concept-card">
+        <h3>Clue 1 — A Starting Point</h3>
+        <p>The curve passes through the point <strong>(0, 1)</strong>. We write this as:</p>
+        <div class="math-display">f(0) = 1</div>
+        <p>This is called the <strong>initial condition</strong> — it tells us where the curve begins.</p>
       </div>
 
-      <button id="resetBtn" class="btn secondary">Start Over</button>
+      <div class="concept-card yellow">
+        <h3>Clue 2 — A Slope Rule</h3>
+        <p>At every point on the curve, the <strong>slope equals the y-value</strong>. We write this as:</p>
+        <div class="math-display"><span class="yellow">Δy/Δx = y</span></div>
+        <p>This is called a <strong>differential equation</strong> — a rule that connects the slope of a curve to its position.</p>
+      </div>
+
+      <p>Together, these two clues completely determine the curve. Our job? <strong>Approximate it</strong> using only arithmetic — no calculus needed.</p>
     </section>
 
-    <!-- Center: Table + Prompt/Feedback -->
-    <section class="table-panel">
-      <div class="table-scroll">
-        <table id="values-table">
-          <thead>
-            <tr><th>n</th><th>x<sub>n</sub></th><th>y<sub>n</sub></th><th>m<sub>n</sub></th></tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
+    <!-- Section 2: What Is Slope? -->
+    <section class="lesson-section">
+      <h2>Quick Review: What Is Slope?</h2>
+      <p>Slope measures how steep a line is. It's the ratio of <strong>how much you go up</strong> (rise) to <strong>how far you go across</strong> (run).</p>
 
-      <div class="table-bottom">
-        <div id="prompt-box" class="prompt-box">
-          <p id="prompt-text">Enter x<sub>1</sub> in the table →</p>
-        </div>
+      <div class="math-display">slope = <span class="green">Δy</span> / Δx = <span style="color: #f87171;">rise</span> / <span class="green">run</span></div>
 
-        <div id="feedback-box" class="feedback-box hidden">
-          <p id="feedback-text"></p>
-        </div>
-
-        <div id="reflection-section" class="hidden">
-          <h3>Stage Complete!</h3>
-          <p>What do you think will happen to the path when we use h = 0.5 instead of h = 1?</p>
-          <textarea id="student-reflection" rows="3" placeholder="Type your thoughts..."></textarea>
-          <button id="submit-reflection-btn" class="btn primary">Submit</button>
-          <div id="reflection-feedback" class="hidden"></div>
-          <button id="next-stage-btn" class="btn primary hidden">Next Stage →</button>
-        </div>
+      <div class="concept-card green">
+        <h3>Example</h3>
+        <p>If you move 1 unit to the right (Δx = 1) and go up 3 units (Δy = 3), the slope is <strong>3</strong>.</p>
+        <p>A steeper line has a bigger slope. A flat line has slope 0.</p>
       </div>
     </section>
 
-    <!-- Right: Graph -->
-    <section class="graph-panel">
-      <div id="stage-overlay" class="stage-overlay hidden">
-        <p id="overlay-text"></p>
-      </div>
-      <canvas id="slopeChart"></canvas>
-    </section>
-  </main>
+    <!-- Section 3: The Big Idea -->
+    <section class="lesson-section">
+      <h2>The Big Idea: Walking the Curve</h2>
+      <p>Here's the key insight. Even though we can't see the whole curve, we know:</p>
+      <ol style="margin: 0.5rem 0 0.75rem 1.5rem; line-height: 2; font-size: 0.92rem; color: #cbd5e1;">
+        <li>Where we start — the point <strong>(0, 1)</strong></li>
+        <li>What direction to walk — the slope rule tells us</li>
+      </ol>
 
-  <footer>
-    <p>Built for learning &middot; Grade 9 Enrichment</p>
+      <p>So we can <strong>take small straight-line steps</strong> in the direction of the slope, like a hiker following a compass in the fog:</p>
+
+      <div class="analogy">
+        <strong>🥾 Imagine this:</strong> You're standing on a hillside in thick fog. You can't see the trail ahead, but your compass (the slope rule) tells you which direction is uphill from where you're standing right now. So you take one step in that direction, check the compass again, and repeat. Each step is straight, but the full walk approximates the winding trail.
+      </div>
+
+      <p>This process is called <strong>Euler's Method</strong> (named after the mathematician Leonhard Euler). Each straight-line segment follows the slope at the current point.</p>
+    </section>
+
+    <!-- Section 4: The Process -->
+    <section class="lesson-section">
+      <h2>The Step-by-Step Process</h2>
+      <p>Here's what we'll do in the Path Builder Challenge:</p>
+
+      <div class="concept-card">
+        <h3>Step 1 — Check the slope</h3>
+        <p>Use the slope rule to find the slope at the current point. Our rule says: <strong>slope = y-value</strong>.</p>
+      </div>
+
+      <div class="concept-card yellow">
+        <h3>Step 2 — Walk forward</h3>
+        <p>Move a fixed distance to the right (that distance is <strong>h</strong>, the step size). Use the slope to calculate how far up you go:</p>
+        <div class="math-display"><span class="yellow">y<sub>new</sub> = y<sub>old</sub> + slope × h</span></div>
+      </div>
+
+      <div class="concept-card green">
+        <h3>Step 3 — Repeat</h3>
+        <p>You're now at a new point. Check the slope again and take another step. Each step adds one segment to your path.</p>
+      </div>
+    </section>
+
+    <!-- Section 5: Vocabulary -->
+    <section class="lesson-section">
+      <h2>Key Vocabulary</h2>
+      <ul class="vocab-list">
+        <li><strong>Differential equation</strong> — A rule that relates the slope of a curve to its coordinates (e.g., Δy/Δx = y)</li>
+        <li><strong>Initial condition</strong> — The known starting point of the curve (e.g., f(0) = 1)</li>
+        <li><strong>Step size (h)</strong> — The horizontal distance of each step. Smaller h = more accurate path</li>
+        <li><strong>Euler's Method</strong> — Approximating a curve by taking small straight-line steps using the slope rule</li>
+        <li><strong>Slope (m)</strong> — How steep the curve is at a point. In our problem, slope = y-value</li>
+        <li><strong>Approximation</strong> — An estimate that gets closer to the real answer with more/smaller steps</li>
+      </ul>
+    </section>
+
+    <!-- Section 6: What's Next -->
+    <section class="lesson-section">
+      <h2>What's Next?</h2>
+      <p>But wait — the idea of "a rule that gives you a slope" is unusual. Most functions you've seen output a <em>y-value</em>. How can a function output a <em>slope</em>?</p>
+      <p>In the next lesson, we'll explore this idea with an interactive <strong>Slope Machine</strong>.</p>
+
+      <a href="slope-function.html" class="next-btn">Next: The Slope Machine →</a>
+    </section>
+
+  </div>
+
+  <footer class="lesson-footer">
+    <p>Built for learning · Grade 9 Enrichment</p>
   </footer>
 
-  <script src="script.js"></script>
 </body>
 </html>
