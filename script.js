@@ -184,10 +184,10 @@ function checkStep() {
     const stepsNeeded = stages[currentStage].stepsNeeded;
 
     if (stepsCompleted >= stepsNeeded) {
-      showFeedback("🎉 Stage Complete!",
-        `You plotted ${stepsNeeded} steps! Because the slope at each point equals that point's x-value + 1, the path curves upward — the steeper it gets, the faster y grows.`,
-        "success");
       if (currentStage < stages.length - 1) {
+        showFeedback("🎉 Stage Complete!",
+          `You plotted ${stepsNeeded} steps with h = ${stepSize}! Now let's try smaller steps.`,
+          "success");
         reflectionSec.classList.remove("hidden");
       } else {
         showFeedback("🏆 Challenge Complete!",
@@ -230,7 +230,14 @@ function showFeedback(title, text, type) {
 // ── Next Stage ──────────────────────────────────────────
 function advanceStage() {
   currentStage++;
-  if (currentStage >= stages.length) return;
+  if (currentStage >= stages.length) {
+    // Final stage already done — just hide reflection
+    reflectionSec.classList.add("hidden");
+    showFeedback("🏆 Challenge Complete!",
+      "You finished both stages! Notice how smaller steps made a smoother curve.",
+      "success");
+    return;
+  }
 
   stepSize = stages[currentStage].stepSize;
   path = [{ x: 0, y: 0 }];
