@@ -35,6 +35,11 @@ let slopePreview = null;
 let traceSegment = null;
 let animating = false;
 
+// Show exact curve after stage complete
+let showExact = false;
+
+function exactY(x) { return x * x / 2 + x; }
+
 // ── Chart Setup ─────────────────────────────────────────
 const slopeChart = new Chart(ctx, {
   type: "scatter",
@@ -160,6 +165,25 @@ function updateChart() {
       ],
       borderColor: "#f87171", borderWidth: 2, borderDash: [4, 3],
       pointRadius: 0, showLine: true
+    });
+  }
+
+  // Exact solution curve (shown after stage complete)
+  if (showExact) {
+    const xMax = Math.max(5, ...path.map(p => p.x));
+    const exactData = [];
+    for (let x = 0; x <= xMax; x += 0.1) {
+      exactData.push({ x: r(x), y: r(exactY(x)) });
+    }
+    datasets.push({
+      label: "Exact: y = x²/2 + x",
+      data: exactData,
+      borderColor: "#a78bfa",
+      borderWidth: 2,
+      borderDash: [2, 2],
+      pointRadius: 0,
+      showLine: true,
+      tension: 0.4
     });
   }
 
@@ -324,11 +348,13 @@ function validateEntry(input, which) {
       const stepsCompleted = path.length - 1;
 
       if (stepsCompleted >= stepsNeeded) {
+        showExact = true;
+        updateChart();
         if (currentStage < stages.length - 1) {
-          showFeedback(`🎉 Stage complete! You plotted ${stepsNeeded} steps with h = ${stepSize}.`, "success");
+          showFeedback(`🎉 Stage complete! The Euler path is an <strong>under-estimate</strong> — it stays below the exact curve y = x²/2 + x.`, "success");
           reflectionSec.classList.remove("hidden");
         } else {
-          showFeedback("🏆 Challenge complete! Both stages done.", "success");
+          showFeedback(`🏆 Challenge complete! Notice the path with h = ${stepSize} is closer to the exact curve — smaller steps give a better estimate.`, "success");
         }
         currentRow++;
         currentCol = 0;
@@ -461,6 +487,24 @@ function updateChartRaw() {
     });
   }
 
+  if (showExact) {
+    const xMax = Math.max(5, ...path.map(p => p.x));
+    const exactData = [];
+    for (let x = 0; x <= xMax; x += 0.1) {
+      exactData.push({ x: r(x), y: r(exactY(x)) });
+    }
+    datasets.push({
+      label: "Exact: y = x²/2 + x",
+      data: exactData,
+      borderColor: "#a78bfa",
+      borderWidth: 2,
+      borderDash: [2, 2],
+      pointRadius: 0,
+      showLine: true,
+      tension: 0.4
+    });
+  }
+
   slopeChart.data.datasets = datasets;
   slopeChart.update("none");
 }
@@ -549,6 +593,7 @@ function resetAll() {
   currentRow = 1;
   currentCol = 0;
   slopePreview = null;
+  showExact = false;
   reflectionSec.classList.add("hidden");
   reflectionFeedback.className = "reflection-feedback hidden";
   submitReflectionBtn.classList.remove("hidden");
