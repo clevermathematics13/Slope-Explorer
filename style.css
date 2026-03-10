@@ -35,11 +35,11 @@ header h1 {
   color: #94a3b8;
 }
 
-/* ===== Main Layout ===== */
+/* ===== Main Layout: rules | table | graph ===== */
 main {
   flex: 1;
   display: grid;
-  grid-template-columns: 300px 1fr 220px;
+  grid-template-columns: 220px 1fr 1fr;
   gap: 0.75rem;
   padding: 0.5rem 1rem;
   max-width: 1400px;
@@ -49,57 +49,68 @@ main {
   overflow: hidden;
 }
 
-/* ===== Controls Panel ===== */
-.controls {
+/* ===== Rules Panel (left) ===== */
+.rules-panel {
   background: #1e293b;
   border-radius: 0.75rem;
   padding: 0.75rem;
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.5rem;
   overflow-y: auto;
 }
 
-.controls h2 {
-  font-size: 1rem;
-  color: #f1f5f9;
-}
-
-.input-row {
-  display: flex;
-  gap: 0.75rem;
-}
-
-.input-group {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.input-group label {
-  font-family: "Fira Code", monospace;
-  font-size: 0.85rem;
-  color: #94a3b8;
-}
-
-.input-group input {
-  width: 100%;
-  min-width: 0;
-  padding: 0.35rem 0.5rem;
-  border: 2px solid #334155;
-  border-radius: 0.5rem;
+.machine-display {
   background: #0f172a;
-  color: #f8fafc;
-  font-family: "Fira Code", monospace;
-  font-size: 0.9rem;
-  text-align: center;
-  transition: border-color 0.2s;
+  border-left: 4px solid #38bdf8;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0 0.5rem 0.5rem 0;
+  font-size: 0.82rem;
+  line-height: 1.6;
 }
 
-.input-group input:focus {
-  outline: none;
-  border-color: #38bdf8;
+.machine-display p {
+  margin-bottom: 0.15rem;
+}
+
+.machine-display p:last-child {
+  margin-bottom: 0;
+}
+
+/* Prompt box */
+.prompt-box {
+  background: #334155;
+  border-left: 4px solid #facc15;
+  border-radius: 0 0.5rem 0.5rem 0;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85rem;
+  color: #facc15;
+  font-weight: 600;
+  animation: fadeIn 0.3s ease;
+}
+
+/* Feedback box */
+.feedback-box {
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.82rem;
+  animation: fadeIn 0.3s ease;
+}
+
+.feedback-box.hidden {
+  display: none;
+}
+
+.feedback-box.success {
+  background: rgba(74, 222, 128, 0.12);
+  border: 1px solid #4ade80;
+  color: #4ade80;
+}
+
+.feedback-box.error {
+  background: rgba(248, 113, 113, 0.12);
+  border: 1px solid #f87171;
+  color: #f87171;
 }
 
 /* ===== Buttons ===== */
@@ -108,10 +119,11 @@ main {
   border: none;
   border-radius: 0.5rem;
   font-family: "Inter", sans-serif;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.2s, transform 0.1s;
+  width: 100%;
 }
 
 .btn:active {
@@ -136,39 +148,96 @@ main {
   background: #475569;
 }
 
-/* ===== Results ===== */
-.results {
-  background: #0f172a;
-  border: 1px solid #334155;
-  border-radius: 0.5rem;
-  padding: 0.5rem 0.75rem;
+/* ===== Table Panel (center) ===== */
+.table-panel {
+  background: #1e293b;
+  border-radius: 0.75rem;
+  padding: 0.75rem;
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
-  animation: fadeIn 0.3s ease;
+  min-height: 0;
+  overflow: hidden;
 }
 
-.results.hidden {
-  display: none;
+.table-scroll {
+  flex: 1;
+  overflow-y: auto;
 }
 
-.results h3 {
-  font-size: 0.9rem;
-  color: #38bdf8;
-  margin-bottom: 0.1rem;
-}
-
-.results p {
-  font-size: 0.8rem;
-}
-
-.slope-result span {
+#values-table {
+  width: 100%;
+  border-collapse: collapse;
   font-family: "Fira Code", monospace;
-  font-size: 1.2rem;
-  color: #facc15;
+  font-size: 0.9rem;
 }
 
-/* ===== Graph Panel ===== */
+#values-table th {
+  position: sticky;
+  top: 0;
+  background: #1e293b;
+  color: #94a3b8;
+  font-weight: 600;
+  padding: 0.4rem 0.5rem;
+  border-bottom: 2px solid #334155;
+  text-align: center;
+}
+
+#values-table td {
+  padding: 0.35rem 0.5rem;
+  text-align: center;
+  border-bottom: 1px solid #334155;
+  color: #e2e8f0;
+  height: 2.2rem;
+}
+
+#values-table tr:last-child td {
+  border-bottom: none;
+}
+
+#values-table tr.completed-row td {
+  color: #94a3b8;
+}
+
+#values-table tr.active-row td {
+  color: #38bdf8;
+  font-weight: 600;
+}
+
+/* Inline table input */
+#values-table input.cell-input {
+  width: 4rem;
+  padding: 0.2rem 0.3rem;
+  border: 2px solid #38bdf8;
+  border-radius: 0.35rem;
+  background: #0f172a;
+  color: #f8fafc;
+  font-family: "Fira Code", monospace;
+  font-size: 0.9rem;
+  text-align: center;
+  outline: none;
+}
+
+#values-table input.cell-input:focus {
+  border-color: #facc15;
+  box-shadow: 0 0 0 2px rgba(250, 204, 21, 0.25);
+}
+
+#values-table input.cell-input.correct {
+  border-color: #4ade80;
+  color: #4ade80;
+}
+
+#values-table input.cell-input.wrong {
+  border-color: #f87171;
+  animation: shake 0.3s ease;
+}
+
+/* Locked (already answered) cell with green check */
+.cell-done {
+  color: #4ade80 !important;
+}
+
+/* ===== Graph Panel (right) ===== */
 .graph-panel {
   background: #1e293b;
   border-radius: 0.75rem;
@@ -185,7 +254,7 @@ main {
   height: 100% !important;
 }
 
-/* ===== Stage Overlay ===== */
+/* Stage Overlay */
 .stage-overlay {
   position: absolute;
   inset: 0;
@@ -195,7 +264,7 @@ main {
   justify-content: center;
   background: rgba(15, 23, 42, 0.88);
   border-radius: 0.75rem;
-  padding: 2rem;
+  padding: 1.5rem;
   text-align: center;
   animation: fadeIn 0.4s ease;
 }
@@ -205,11 +274,10 @@ main {
 }
 
 .stage-overlay p {
-  font-size: 1.4rem;
+  font-size: 1.3rem;
   font-weight: 700;
   color: #facc15;
   line-height: 1.5;
-  max-width: 90%;
 }
 
 /* ===== Footer ===== */
@@ -220,10 +288,54 @@ footer {
   color: #475569;
 }
 
+/* ===== Reflection ===== */
+#reflection-section {
+  margin-top: 0.4rem;
+  background: #334155;
+  padding: 0.6rem;
+  border-radius: 0.5rem;
+  border: 1px solid #475569;
+  font-size: 0.82rem;
+}
+
+#reflection-section.hidden {
+  display: none;
+}
+
+#reflection-section h3 {
+  color: #facc15;
+  margin-bottom: 0.2rem;
+  font-size: 0.9rem;
+}
+
+#student-reflection {
+  width: 100%;
+  margin: 0.4rem 0;
+  padding: 0.5rem;
+  border: 2px solid #0f172a;
+  border-radius: 0.5rem;
+  background: #0f172a;
+  color: #f8fafc;
+  font-family: "Inter", sans-serif;
+  font-size: 0.82rem;
+  resize: vertical;
+}
+
+#student-reflection:focus {
+  outline: none;
+  border-color: #38bdf8;
+}
+
 /* ===== Animations ===== */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(6px); }
+  from { opacity: 0; transform: translateY(4px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
 }
 
 /* ===== Responsive ===== */
@@ -235,123 +347,4 @@ footer {
   .graph-panel {
     min-height: 250px;
   }
-}
-/* ===== New Path Builder Elements (Add to bottom of your CSS) ===== */
-
-.machine-display {
-  background: #0f172a;
-  border-left: 4px solid #38bdf8;
-  padding: 0.5rem 0.75rem;
-  border-radius: 0 0.5rem 0.5rem 0;
-  margin-bottom: 0;
-  font-size: 0.85rem;
-}
-
-.machine-display p {
-  margin-bottom: 0.2rem;
-}
-
-.machine-display p:last-child {
-  margin-bottom: 0;
-}
-
-hr {
-  border: 0;
-  height: 1px;
-  background: #334155;
-  margin: 0.4rem 0;
-}
-
-#reflection-section {
-  margin-top: 0.4rem;
-  background: #334155;
-  padding: 0.75rem;
-  border-radius: 0.5rem;
-  border: 1px solid #475569;
-}
-
-#reflection-section h3 {
-  color: #facc15;
-  margin-bottom: 0.25rem;
-  font-size: 0.95rem;
-}
-
-#student-reflection {
-  width: 100%;
-  margin: 0.75rem 0;
-  padding: 0.75rem;
-  border: 2px solid #0f172a;
-  border-radius: 0.5rem;
-  background: #0f172a;
-  color: #f8fafc;
-  font-family: "Inter", sans-serif;
-  resize: vertical;
-}
-
-#student-reflection:focus {
-  outline: none;
-  border-color: #38bdf8;
-}
-
-/* Override the inline HTML styles for the AI box */
-#ai-feedback-box {
-  border-left-color: #475569 !important;
-}
-
-/* ===== Table Panel ===== */
-.table-panel {
-  background: #1e293b;
-  border-radius: 0.75rem;
-  padding: 0.75rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  min-height: 0;
-  overflow: hidden;
-}
-
-.table-panel h2 {
-  font-size: 1rem;
-  color: #f1f5f9;
-  margin: 0;
-}
-
-.table-scroll {
-  flex: 1;
-  overflow-y: auto;
-}
-
-#values-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-family: "Fira Code", monospace;
-  font-size: 0.8rem;
-}
-
-#values-table th {
-  position: sticky;
-  top: 0;
-  background: #1e293b;
-  color: #94a3b8;
-  font-weight: 600;
-  padding: 0.3rem 0.4rem;
-  border-bottom: 2px solid #334155;
-  text-align: center;
-}
-
-#values-table td {
-  padding: 0.25rem 0.4rem;
-  text-align: center;
-  border-bottom: 1px solid #334155;
-  color: #e2e8f0;
-}
-
-#values-table tr:last-child td {
-  border-bottom: none;
-}
-
-#values-table tr.current-row td {
-  color: #38bdf8;
-  font-weight: 600;
-}
 }

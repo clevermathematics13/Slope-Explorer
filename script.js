@@ -1,21 +1,15 @@
 // ── DOM References ──────────────────────────────────────
-const nextXInput      = document.getElementById("next-x");
-const nextYInput      = document.getElementById("next-y");
-const checkBtn        = document.getElementById("checkPathBtn");
-const resetBtn        = document.getElementById("resetBtn");
-const locationEl      = document.getElementById("current-location");
-const currentNEl      = document.getElementById("current-n");
-const ruleEl          = document.getElementById("current-rule");
 const stepSizeEl      = document.getElementById("step-size");
-const feedbackBox     = document.getElementById("ai-feedback-box");
-const feedbackTitle   = document.getElementById("feedback-title");
-const feedbackText    = document.getElementById("feedback-text");
+const promptText      = document.getElementById("prompt-text");
+const feedbackBox     = document.getElementById("feedback-box");
+const feedbackTextEl  = document.getElementById("feedback-text");
+const resetBtn        = document.getElementById("resetBtn");
 const reflectionSec   = document.getElementById("reflection-section");
 const nextStageBtn    = document.getElementById("next-stage-btn");
-const ctx             = document.getElementById("slopeChart").getContext("2d");
 const tableBody       = document.querySelector("#values-table tbody");
 const stageOverlay    = document.getElementById("stage-overlay");
 const overlayText     = document.getElementById("overlay-text");
+const ctx             = document.getElementById("slopeChart").getContext("2d");
 
 // ── Game State ──────────────────────────────────────────
 const stages = [
@@ -24,13 +18,15 @@ const stages = [
 ];
 
 let currentStage = 0;
-let path = [{ x: 0, y: 0 }];   // points the student has confirmed
 let stepSize = stages[0].stepSize;
+let path = [{ x: 0, y: 0 }];     // confirmed points
+let currentRow = 1;               // row we're filling (0 is pre-filled)
+let currentCol = 0;               // 0 = x_n, 1 = m_n, 2 = y_n
 
-// Slope rule: steepness = x + 1
-function slopeAt(x) {
-  return x + 1;
-}
+function slopeAt(x) { return x + 1; }
+
+// Round to avoid floating-point noise
+function r(v) { return Math.round(v * 10000) / 10000; }
 
 // ── Chart Setup ─────────────────────────────────────────
 const slopeChart = new Chart(ctx, {
@@ -60,22 +56,19 @@ const slopeChart = new Chart(ctx, {
     plugins: {
       legend: { display: false },
       tooltip: {
-        callbacks: {
-          label: (tip) => `(${tip.parsed.x}, ${tip.parsed.y})`
-        }
+        callbacks: { label: (tip) => `(${tip.parsed.x}, ${tip.parsed.y})` }
       }
     }
   }
 });
 
-// ── Drawing ─────────────────────────────────────────────
+// ── Chart Drawing ───────────────────────────────────────
 function updateChart() {
   const datasets = [];
 
-  // Path line connecting confirmed points
   if (path.length >= 2) {
     datasets.push({
-      label: "Your Path",
+      label: "Path",
       data: path.map(p => ({ x: p.x, y: p.y })),
       borderColor: "#38bdf8",
       backgroundColor: "#38bdf8",
@@ -86,7 +79,6 @@ function updateChart() {
     });
   }
 
-  // All confirmed points
   datasets.push({
     label: "Points",
     data: path.map(p => ({ x: p.x, y: p.y })),
@@ -96,35 +88,25 @@ function updateChart() {
     showLine: false
   });
 
-  // Rise/Run staircase segments for each step
+  // Rise / Run staircases
   for (let i = 0; i < path.length - 1; i++) {
-    const p1 = path[i];
-    const p2 = path[i + 1];
-    // Run (horizontal)
+    const p1 = path[i], p2 = path[i + 1];
     datasets.push({
       label: i === 0 ? "Run (Δx)" : "",
       data: [{ x: p1.x, y: p1.y }, { x: p2.x, y: p1.y }],
-      borderColor: "#4ade80",
-      borderWidth: 2,
-      borderDash: [4, 3],
-      pointRadius: 0,
-      showLine: true
+      borderColor: "#4ade80", borderWidth: 2, borderDash: [4, 3],
+      pointRadius: 0, showLine: true
     });
-    // Rise (vertical)
     datasets.push({
       label: i === 0 ? "Rise (Δy)" : "",
       data: [{ x: p2.x, y: p1.y }, { x: p2.x, y: p2.y }],
-      borderColor: "#f87171",
-      borderWidth: 2,
-      borderDash: [4, 3],
-      pointRadius: 0,
-      showLine: true
+      borderColor: "#f87171", borderWidth: 2, borderDash: [4, 3],
+      pointRadius: 0, showLine: true
     });
   }
 
   // Auto-scale
-  const allX = path.map(p => p.x);
-  const allY = path.map(p => p.y);
+  const allX = path.map(p => p.x), allY = path.map(p => p.y);
   const pad = 2;
   slopeChart.options.scales.x.min = Math.min(0, ...allX) - pad;
   slopeChart.options.scales.x.max = Math.max(5, ...allX) + pad;
@@ -135,140 +117,239 @@ function updateChart() {
   slopeChart.update();
 }
 
-// ── Table ───────────────────────────────────────────────
-function updateTable() {
+// ── Table Rendering ─────────────────────────────────────
+// We track accepted values for each row: { x, m, y }
+let rowData = [];   // rowData[n] = { x, m, y } once confirmed
+
+function buildTable() {
   tableBody.innerHTML = "";
-  for (let i = 0; i < path.length; i++) {
-    const p = path[i];
-    const slope = slopeAt(p.x);
+
+  // Row 0 — always pre-filled
+  const tr0 = document.createElement("tr");
+  tr0.classList.add("completed-row");
+  tr0.innerHTML = `<td>0</td><td>0</td><td>${slopeAt(0)}</td><td>0</td>`;
+  tableBody.appendChild(tr0);
+
+  // Confirmed rows 1..currentRow-1
+  for (let n = 1; n < currentRow; n++) {
+    const d = rowData[n];
     const tr = document.createElement("tr");
-    if (i === path.length - 1) tr.classList.add("current-row");
-    tr.innerHTML = `<td>${i}</td><td>${p.x}</td><td>${slope}</td><td>${p.y}</td>`;
+    tr.classList.add("completed-row");
+    tr.innerHTML = `<td>${n}</td><td class="cell-done">${d.x}</td><td class="cell-done">${d.m}</td><td class="cell-done">${d.y}</td>`;
     tableBody.appendChild(tr);
   }
+
+  // Active row (if we haven't finished the stage)
+  const stepsNeeded = stages[currentStage].stepsNeeded;
+  if (currentRow <= stepsNeeded) {
+    const tr = document.createElement("tr");
+    tr.classList.add("active-row");
+    tr.id = "active-row";
+
+    const tdN = document.createElement("td");
+    tdN.textContent = currentRow;
+    tr.appendChild(tdN);
+
+    // x cell
+    const tdX = document.createElement("td");
+    if (currentCol === 0) {
+      tdX.appendChild(createInput("x"));
+    } else {
+      tdX.textContent = rowData[currentRow]?.x ?? "";
+      if (rowData[currentRow]?.x !== undefined) tdX.classList.add("cell-done");
+    }
+    tr.appendChild(tdX);
+
+    // m cell
+    const tdM = document.createElement("td");
+    if (currentCol === 1) {
+      tdM.appendChild(createInput("m"));
+    } else if (currentCol > 1) {
+      tdM.textContent = rowData[currentRow]?.m ?? "";
+      if (rowData[currentRow]?.m !== undefined) tdM.classList.add("cell-done");
+    }
+    tr.appendChild(tdM);
+
+    // y cell
+    const tdY = document.createElement("td");
+    if (currentCol === 2) {
+      tdY.appendChild(createInput("y"));
+    } else if (currentCol > 2) {
+      tdY.textContent = rowData[currentRow]?.y ?? "";
+    }
+    tr.appendChild(tdY);
+
+    tableBody.appendChild(tr);
+  }
+
+  // Scroll to bottom
+  const scrollEl = tableBody.closest(".table-scroll");
+  if (scrollEl) scrollEl.scrollTop = scrollEl.scrollHeight;
 }
 
-// ── Update the info display ─────────────────────────────
-function updateDisplay() {
-  const last = path[path.length - 1];
-  const n = path.length - 1;
-  currentNEl.textContent = n;
-  locationEl.textContent = `(${last.x}, ${last.y})`;
-  stepSizeEl.textContent = stepSize;
-  ruleEl.innerHTML = "m<sub>n</sub> = x<sub>n</sub> + 1";
+function createInput(which) {
+  const input = document.createElement("input");
+  input.type = "text";
+  input.inputMode = "decimal";
+  input.classList.add("cell-input");
+  input.id = "active-input";
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") validateEntry(input, which);
+  });
+  // Auto-focus after DOM insert
+  requestAnimationFrame(() => input.focus());
+  return input;
 }
 
-// ── Check the student's step ────────────────────────────
-function checkStep() {
-  const nx = parseFloat(nextXInput.value);
-  const ny = parseFloat(nextYInput.value);
-
-  if (Number.isNaN(nx) || Number.isNaN(ny)) {
-    showFeedback("Oops!", "Please enter numbers for both x and y.", "error");
+// ── Validation ──────────────────────────────────────────
+function validateEntry(input, which) {
+  const val = parseFloat(input.value);
+  if (Number.isNaN(val)) {
+    showFeedback("Enter a number.", "error");
+    shakInput(input);
     return;
   }
 
-  const last = path[path.length - 1];
-  const expectedX = Math.round((last.x + stepSize) * 1000) / 1000;
-  const slope = slopeAt(last.x);
-  const expectedY = Math.round((last.y + slope * stepSize) * 1000) / 1000;
+  const prev = path[path.length - 1];  // last confirmed point
+  let expected, label;
 
-  const xCorrect = Math.abs(nx - expectedX) < 0.01;
-  const yCorrect = Math.abs(ny - expectedY) < 0.01;
-
-  if (xCorrect && yCorrect) {
-    path.push({ x: expectedX, y: expectedY });
-    updateChart();
-    updateDisplay();
-    updateTable();
-    hideOverlay();
-
-    const stepsCompleted = path.length - 1;
-    const stepsNeeded = stages[currentStage].stepsNeeded;
-
-    if (stepsCompleted >= stepsNeeded) {
-      if (currentStage < stages.length - 1) {
-        showFeedback("🎉 Stage Complete!",
-          `You plotted ${stepsNeeded} steps with h = ${stepSize}! Now let's try smaller steps.`,
-          "success");
-        reflectionSec.classList.remove("hidden");
-      } else {
-        showFeedback("🏆 Challenge Complete!",
-          "You finished both stages! Notice how smaller steps made a smoother curve.",
-          "success");
-      }
-    } else {
-      showFeedback("✅ Correct!",
-        `Slope at x = ${last.x} was ${slope}, so rise = ${slope} × ${stepSize} = ${(slope * stepSize)}. ` +
-        `New point: (${expectedX}, ${expectedY}). ${stepsNeeded - stepsCompleted} steps left!`,
-        "success");
-    }
-
-    // Clear inputs for next step
-    nextXInput.value = "";
-    nextYInput.value = "";
-    nextXInput.focus();
-
+  if (which === "x") {
+    expected = r(prev.x + stepSize);
+    label = `x<sub>${currentRow}</sub>`;
+  } else if (which === "m") {
+    const xn = rowData[currentRow].x;
+    expected = r(slopeAt(xn));
+    label = `m<sub>${currentRow}</sub>`;
   } else {
-    // Give specific feedback on what went wrong
+    // y_n  (this IS the new y value: y_{n} = y_{n-1} + m_{n-1} * h)
+    // But wait — in the table, the columns are n, x_n, m_n, y_n.
+    // The Euler formula is: y_{n+1} = y_n + m_n · h
+    // So for row n: y_n is the y value at step n.
+    // y_n = y_{n-1} + m_{n-1} · h  (using previous row's slope)
+    expected = r(prev.y + slopeAt(prev.x) * stepSize);
+    label = `y<sub>${currentRow}</sub>`;
+  }
+
+  if (Math.abs(val - expected) < 0.01) {
+    // Correct
+    input.classList.add("correct");
+    input.disabled = true;
+
+    if (!rowData[currentRow]) rowData[currentRow] = {};
+    if (which === "x") rowData[currentRow].x = expected;
+    if (which === "m") rowData[currentRow].m = expected;
+    if (which === "y") rowData[currentRow].y = expected;
+
+    showFeedback(`✅ ${label} = ${expected}`, "success");
+
+    currentCol++;
+
+    if (currentCol > 2) {
+      // Row complete — add point and move on
+      path.push({ x: rowData[currentRow].x, y: rowData[currentRow].y });
+      updateChart();
+      hideOverlay();
+
+      const stepsNeeded = stages[currentStage].stepsNeeded;
+      const stepsCompleted = path.length - 1;
+
+      if (stepsCompleted >= stepsNeeded) {
+        // Stage complete
+        if (currentStage < stages.length - 1) {
+          showFeedback(`🎉 Stage complete! You plotted ${stepsNeeded} steps with h = ${stepSize}.`, "success");
+          reflectionSec.classList.remove("hidden");
+        } else {
+          showFeedback("🏆 Challenge complete! Both stages done.", "success");
+        }
+        currentRow++;
+        currentCol = 0;
+        buildTable();
+        updatePrompt();
+        return;
+      }
+
+      currentRow++;
+      currentCol = 0;
+    }
+
+    buildTable();
+    updatePrompt();
+  } else {
+    // Wrong
+    shakInput(input);
     let hint = "";
-    if (!xCorrect) {
-      hint += `The x-value should be ${last.x} + ${stepSize} = ${expectedX}. `;
+    if (which === "x") {
+      hint = ` Hint: x<sub>${currentRow}</sub> = x<sub>${currentRow - 1}</sub> + h = ${prev.x} + ${stepSize}`;
+    } else if (which === "m") {
+      hint = ` Hint: m<sub>${currentRow}</sub> = x<sub>${currentRow}</sub> + 1 = ${rowData[currentRow].x} + 1`;
+    } else {
+      const prevSlope = slopeAt(prev.x);
+      hint = ` Hint: y<sub>${currentRow}</sub> = y<sub>${currentRow - 1}</sub> + m<sub>${currentRow - 1}</sub> · h = ${prev.y} + ${prevSlope} × ${stepSize}`;
     }
-    if (!yCorrect) {
-      hint += `The slope at x = ${last.x} is ${slope}, so rise = ${slope} × ${stepSize} = ${slope * stepSize}. ` +
-              `y should be ${last.y} + ${slope * stepSize} = ${expectedY}.`;
-    }
-    showFeedback("❌ Not quite!", hint, "error");
+    showFeedback(`❌ Not quite.${hint}`, "error");
   }
 }
 
-function showFeedback(title, text, type) {
-  feedbackTitle.textContent = title;
-  feedbackText.textContent = text;
-  feedbackBox.classList.remove("hidden");
-  feedbackBox.style.borderColor = type === "success" ? "#4ade80" : "#f87171";
+function shakInput(input) {
+  input.classList.add("wrong");
+  setTimeout(() => input.classList.remove("wrong"), 350);
 }
 
-// ── Next Stage ──────────────────────────────────────────
+// ── Prompt Updates ──────────────────────────────────────
+function updatePrompt() {
+  const stepsNeeded = stages[currentStage].stepsNeeded;
+  if (path.length - 1 >= stepsNeeded) {
+    if (currentStage >= stages.length - 1) {
+      promptText.innerHTML = "🏆 All stages complete!";
+    } else {
+      promptText.innerHTML = "Reflect below, then continue →";
+    }
+    return;
+  }
+
+  const sub = `<sub>${currentRow}</sub>`;
+  if (currentCol === 0) {
+    promptText.innerHTML = `Enter x${sub} in the table →`;
+  } else if (currentCol === 1) {
+    promptText.innerHTML = `Now enter m${sub} (the slope) →`;
+  } else {
+    promptText.innerHTML = `Now enter y${sub} →`;
+  }
+}
+
+// ── Feedback ────────────────────────────────────────────
+function showFeedback(html, type) {
+  feedbackTextEl.innerHTML = html;
+  feedbackBox.className = "feedback-box " + type;
+}
+
+// ── Stage / Overlay ─────────────────────────────────────
 function advanceStage() {
   currentStage++;
   if (currentStage >= stages.length) {
-    // Final stage already done — just hide reflection
     reflectionSec.classList.add("hidden");
-    showFeedback("🏆 Challenge Complete!",
-      "You finished both stages! Notice how smaller steps made a smoother curve.",
-      "success");
+    showFeedback("🏆 Challenge complete! Both stages done.", "success");
     return;
   }
 
   stepSize = stages[currentStage].stepSize;
   path = [{ x: 0, y: 0 }];
+  rowData = [];
+  currentRow = 1;
+  currentCol = 0;
   reflectionSec.classList.add("hidden");
-  feedbackBox.classList.add("hidden");
-  nextXInput.value = "";
-  nextYInput.value = "";
-  showOverlay(`Stage ${currentStage + 1}: Step size is now h = ${stepSize}\nSmaller steps → smoother curve!`);
-  updateDisplay();
+  feedbackBox.className = "feedback-box hidden";
+  stepSizeEl.textContent = stepSize;
+
+  showOverlay(`Stage ${currentStage + 1}\nh = ${stepSize}\nSmaller steps → smoother curve!`);
+  setTimeout(() => {
+    hideOverlay();
+    buildTable();
+    updatePrompt();
+  }, 2200);
   updateChart();
-  updateTable();
 }
 
-// ── Reset ───────────────────────────────────────────────
-function resetAll() {
-  currentStage = 0;
-  stepSize = stages[0].stepSize;
-  path = [{ x: 0, y: 0 }];
-  feedbackBox.classList.add("hidden");
-  reflectionSec.classList.add("hidden");
-  nextXInput.value = "";
-  nextYInput.value = "";
-  updateDisplay();
-  updateChart();
-  updateTable();
-}
-
-// ── Overlay ─────────────────────────────────────────────
 function showOverlay(text) {
   overlayText.textContent = text;
   stageOverlay.classList.remove("hidden");
@@ -278,18 +359,28 @@ function hideOverlay() {
   stageOverlay.classList.add("hidden");
 }
 
+// ── Reset ───────────────────────────────────────────────
+function resetAll() {
+  currentStage = 0;
+  stepSize = stages[0].stepSize;
+  path = [{ x: 0, y: 0 }];
+  rowData = [];
+  currentRow = 1;
+  currentCol = 0;
+  reflectionSec.classList.add("hidden");
+  feedbackBox.className = "feedback-box hidden";
+  stepSizeEl.textContent = stepSize;
+  hideOverlay();
+  buildTable();
+  updateChart();
+  updatePrompt();
+}
+
 // ── Event Listeners ─────────────────────────────────────
-checkBtn.addEventListener("click", checkStep);
 resetBtn.addEventListener("click", resetAll);
 nextStageBtn.addEventListener("click", advanceStage);
 
-document.querySelectorAll("input").forEach((input) => {
-  input.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") checkStep();
-  });
-});
-
 // ── Initialize ──────────────────────────────────────────
-updateDisplay();
+buildTable();
 updateChart();
-updateTable();
+updatePrompt();

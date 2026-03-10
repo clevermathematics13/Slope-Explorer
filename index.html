@@ -17,60 +17,38 @@
 
   <header>
     <h1>🤖 The Path Builder Challenge</h1>
-    <p class="subtitle">Use the Slope Machine to guide the robot across the map.</p>
+    <p class="subtitle">Fill in the table one value at a time to build the Euler approximation.</p>
   </header>
 
   <main>
-    <section class="controls">
-      <h2>The Slope Machine</h2>
-      
+    <!-- Left: Rules & Feedback -->
+    <section class="rules-panel">
       <div class="machine-display">
-        <p><strong>n = </strong><span id="current-n" style="font-family: 'Fira Code', monospace; color: #38bdf8;">0</span>&nbsp;&nbsp; <strong>(x<sub>n</sub>, y<sub>n</sub>) = </strong><span id="current-location" style="font-family: 'Fira Code', monospace; color: #38bdf8;">(0, 0)</span></p>
-        <p><strong>Rule 1:</strong> <span id="current-rule" style="font-family: 'Fira Code', monospace; color: #facc15;">m<sub>n</sub> = x<sub>n</sub> + 1</span></p>
+        <p><strong>Rule 1:</strong> <span style="font-family: 'Fira Code', monospace; color: #facc15;">m<sub>n</sub> = x<sub>n</sub> + 1</span></p>
         <p><strong>Rule 2:</strong> <span style="font-family: 'Fira Code', monospace; color: #facc15;">y<sub>n+1</sub> = y<sub>n</sub> + m<sub>n</sub> · h</span></p>
         <p><strong>Step size:</strong> <span style="font-family: 'Fira Code', monospace; color: #94a3b8;">h = </span><span id="step-size" style="font-family: 'Fira Code', monospace; color: #38bdf8;">1</span></p>
       </div>
 
-      <hr>
-
-      <h2>Plot Your Next Step</h2>
-      <div class="input-row">
-        <div class="input-group">
-          <label for="next-x">Next x</label>
-          <input type="number" id="next-x" step="0.5" placeholder="e.g. 1" />
-        </div>
-        <div class="input-group">
-          <label for="next-y">Next y</label>
-          <input type="number" id="next-y" step="0.5" placeholder="e.g. 1" />
-        </div>
+      <div id="prompt-box" class="prompt-box">
+        <p id="prompt-text">Enter x<sub>1</sub> in the table →</p>
       </div>
 
-      <button id="checkPathBtn" class="btn primary">Check My Step</button>
+      <div id="feedback-box" class="feedback-box hidden">
+        <p id="feedback-text"></p>
+      </div>
+
       <button id="resetBtn" class="btn secondary">Start Over</button>
-
-      <div id="ai-feedback-box" class="results hidden">
-        <h3 id="feedback-title">Result</h3>
-        <p id="feedback-text">Waiting for your first step...</p>
-      </div>
 
       <div id="reflection-section" class="hidden">
         <h3>Stage Complete!</h3>
-        <p>When we checked the machine every 0.5 steps instead of 1 full step, what happened to the shape of the path?</p>
-        <textarea id="student-reflection" rows="4" placeholder="Type your thoughts here..."></textarea>
-        <button id="next-stage-btn" class="btn primary">Submit & Continue</button>
+        <p>When we used h = 0.5 instead of h = 1, what happened to the path?</p>
+        <textarea id="student-reflection" rows="3" placeholder="Type your thoughts..."></textarea>
+        <button id="next-stage-btn" class="btn primary">Submit &amp; Continue</button>
       </div>
-
     </section>
 
-    <section class="graph-panel">
-      <div id="stage-overlay" class="stage-overlay hidden">
-        <p id="overlay-text"></p>
-      </div>
-      <canvas id="slopeChart"></canvas>
-    </section>
-
+    <!-- Center: Table -->
     <section class="table-panel">
-      <h2>Table of Values</h2>
       <div class="table-scroll">
         <table id="values-table">
           <thead>
@@ -79,6 +57,14 @@
           <tbody></tbody>
         </table>
       </div>
+    </section>
+
+    <!-- Right: Graph -->
+    <section class="graph-panel">
+      <div id="stage-overlay" class="stage-overlay hidden">
+        <p id="overlay-text"></p>
+      </div>
+      <canvas id="slopeChart"></canvas>
     </section>
   </main>
 
