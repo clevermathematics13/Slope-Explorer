@@ -308,7 +308,7 @@ function validateEntry(input, which) {
       animateSegment(fromPt, toPt, () => {
         path.push(toPt);
         traceSegment = null;
-        updateChart();
+        updateChartRaw();
         currentCol = 2;
         buildTable();
         updatePrompt();
