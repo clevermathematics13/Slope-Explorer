@@ -19,11 +19,11 @@ const stages = [
 
 let currentStage = 0;
 let stepSize = stages[0].stepSize;
-let path = [{ x: 0, y: 0 }];     // confirmed points
+let path = [{ x: 0, y: 1 }];     // confirmed points
 let currentRow = 1;               // row we're filling (0 is pre-filled)
 let currentCol = 0;               // 0 = x_n, 1 = y_n, 2 = m_n
 
-function slopeAt(x) { return x + 1; }
+function slopeAt(x, y) { return y; }
 
 // Round to avoid floating-point noise
 function r(v) { return Math.round(v * 10000) / 10000; }
@@ -189,6 +189,10 @@ function updateChart() {
 
   // Auto-scale
   const allX = path.map(p => p.x), allY = path.map(p => p.y);
+  if (showExact) {
+    const xMax = Math.max(5, ...allX);
+    allY.push(exactY(xMax));
+  }
   const pad = 2;
   slopeChart.options.scales.x.min = Math.min(0, ...allX) - pad;
   slopeChart.options.scales.x.max = Math.max(5, ...allX) + pad;
@@ -209,7 +213,7 @@ function buildTable() {
   // Row 0 — always pre-filled (n, x, y, m)
   const tr0 = document.createElement("tr");
   tr0.classList.add("completed-row");
-  tr0.innerHTML = `<td>0</td><td>0</td><td>0</td><td>${slopeAt(0)}</td>`;
+  tr0.innerHTML = `<td>0</td><td>0</td><td>1</td><td>${slopeAt(0, 1)}</td>`;
   tableBody.appendChild(tr0);
 
   // Confirmed rows 1..currentRow-1
@@ -301,12 +305,12 @@ function validateEntry(input, which) {
     label = `x<sub>${currentRow}</sub>`;
   } else if (which === "y") {
     // y_n = y_{n-1} + m_{n-1} · h  (using previous row's slope)
-    expected = r(prev.y + slopeAt(prev.x) * stepSize);
+    expected = r(prev.y + slopeAt(prev.x, prev.y) * stepSize);
     label = `y<sub>${currentRow}</sub>`;
   } else {
-    // m_n = x_n + 1
-    const xn = rowData[currentRow].x;
-    expected = r(slopeAt(xn));
+    // m_n = y_n
+    const yn = rowData[currentRow].y;
+    expected = r(slopeAt(rowData[currentRow].x, yn));
     label = `m<sub>${currentRow}</sub>`;
   }
 
@@ -375,10 +379,10 @@ function validateEntry(input, which) {
     if (which === "x") {
       hint = ` Hint: x<sub>${currentRow}</sub> = x<sub>${currentRow - 1}</sub> + h = ${prev.x} + ${stepSize}`;
     } else if (which === "y") {
-      const prevSlope = slopeAt(prev.x);
+      const prevSlope = slopeAt(prev.x, prev.y);
       hint = ` Hint: y<sub>${currentRow}</sub> = y<sub>${currentRow - 1}</sub> + m<sub>${currentRow - 1}</sub> · h = ${prev.y} + ${prevSlope} × ${stepSize}`;
     } else {
-      hint = ` Hint: m<sub>${currentRow}</sub> = x<sub>${currentRow}</sub> + 1 = ${rowData[currentRow].x} + 1`;
+      hint = ` Hint: m<sub>${currentRow}</sub> = y<sub>${currentRow}</sub> = ${rowData[currentRow].y}`;
     }
     showFeedback(`❌ Not quite.${hint}`, "error");
   }
@@ -552,7 +556,7 @@ function advanceStage() {
   }
 
   stepSize = stages[currentStage].stepSize;
-  path = [{ x: 0, y: 0 }];
+  path = [{ x: 0, y: 1 }];
   rowData = [];
   currentRow = 1;
   currentCol = 0;
@@ -588,7 +592,7 @@ function hideOverlay() {
 function resetAll() {
   currentStage = 0;
   stepSize = stages[0].stepSize;
-  path = [{ x: 0, y: 0 }];
+  path = [{ x: 0, y: 1 }];
   rowData = [];
   currentRow = 1;
   currentCol = 0;
@@ -670,7 +674,7 @@ resetBtn.addEventListener("click", resetAll);
 nextStageBtn.addEventListener("click", advanceStage);
 
 // ── Initialize ──────────────────────────────────────────
-slopePreview = { x: 0, y: 0, slope: slopeAt(0) };
+slopePreview = { x: 0, y: 1, slope: slopeAt(0, 1) };
 buildTable();
 updateChart();
 updatePrompt();
