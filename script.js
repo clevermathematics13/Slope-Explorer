@@ -14,6 +14,8 @@ const reflectionSec   = document.getElementById("reflection-section");
 const nextStageBtn    = document.getElementById("next-stage-btn");
 const ctx             = document.getElementById("slopeChart").getContext("2d");
 const tableBody       = document.querySelector("#values-table tbody");
+const stageOverlay    = document.getElementById("stage-overlay");
+const overlayText     = document.getElementById("overlay-text");
 
 // ── Game State ──────────────────────────────────────────
 const stages = [
@@ -179,6 +181,7 @@ function checkStep() {
     updateChart();
     updateDisplay();
     updateTable();
+    hideOverlay();
 
     const stepsCompleted = path.length - 1;
     const stepsNeeded = stages[currentStage].stepsNeeded;
@@ -245,6 +248,7 @@ function advanceStage() {
   feedbackBox.classList.add("hidden");
   nextXInput.value = "";
   nextYInput.value = "";
+  showOverlay(`Stage ${currentStage + 1}: Step size is now h = ${stepSize}\nSmaller steps → smoother curve!`);
   updateDisplay();
   updateChart();
   updateTable();
@@ -262,6 +266,16 @@ function resetAll() {
   updateDisplay();
   updateChart();
   updateTable();
+}
+
+// ── Overlay ─────────────────────────────────────────────
+function showOverlay(text) {
+  overlayText.textContent = text;
+  stageOverlay.classList.remove("hidden");
+}
+
+function hideOverlay() {
+  stageOverlay.classList.add("hidden");
 }
 
 // ── Event Listeners ─────────────────────────────────────
