@@ -38,7 +38,7 @@ let animating = false;
 // Show exact curve after stage complete
 let showExact = false;
 
-function exactY(x) { return x * x / 2 + x; }
+function exactY(x) { return Math.exp(x); }
 
 // ── Chart Setup ─────────────────────────────────────────
 const slopeChart = new Chart(ctx, {
@@ -176,7 +176,7 @@ function updateChart() {
       exactData.push({ x: r(x), y: r(exactY(x)) });
     }
     datasets.push({
-      label: "Exact: y = x²/2 + x",
+      label: "f(x) = eˣ",
       data: exactData,
       borderColor: "#a78bfa",
       borderWidth: 2,
@@ -351,10 +351,10 @@ function validateEntry(input, which) {
         showExact = true;
         updateChart();
         if (currentStage < stages.length - 1) {
-          showFeedback(`🎉 Stage complete! The Euler path is an <strong>under-estimate</strong> — it stays below the exact curve y = x²/2 + x.`, "success");
+          showFeedback(`🎉 Stage complete! The Euler path is an <strong>under-estimate</strong> — it stays below the exact curve f(x) = eˣ.`, "success");
           reflectionSec.classList.remove("hidden");
         } else {
-          showFeedback(`🏆 Challenge complete! Notice the path with h = ${stepSize} is closer to the exact curve — smaller steps give a better estimate.`, "success");
+          showFeedback(`🏆 Challenge complete! Notice the path with h = ${stepSize} is closer to the exact curve f(x) = eˣ — smaller steps give a better estimate.`, "success");
         }
         currentRow++;
         currentCol = 0;
@@ -494,7 +494,7 @@ function updateChartRaw() {
       exactData.push({ x: r(x), y: r(exactY(x)) });
     }
     datasets.push({
-      label: "Exact: y = x²/2 + x",
+      label: "f(x) = eˣ",
       data: exactData,
       borderColor: "#a78bfa",
       borderWidth: 2,
