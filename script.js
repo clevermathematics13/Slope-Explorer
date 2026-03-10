@@ -292,60 +292,56 @@ function validateEntry(input, which) {
     input.disabled = true;
 
     if (!rowData[currentRow]) rowData[currentRow] = {};
+
     if (which === "x") {
       rowData[currentRow].x = expected;
-    }
-    if (which === "y") {
+      showFeedback(`✅ ${label} = ${expected}`, "success");
+      currentCol++;
+      buildTable();
+      updatePrompt();
+    } else if (which === "y") {
       rowData[currentRow].y = expected;
-    }
-    if (which === "m") {
-      rowData[currentRow].m = expected;
-      // Show slope preview from new point (x_n, y_n) with slope m_n
-      slopePreview = { x: rowData[currentRow].x, y: rowData[currentRow].y, slope: expected };
-      updateChart();
-    }
-
-    showFeedback(`✅ ${label} = ${expected}`, "success");
-
-    currentCol++;
-
-    if (currentCol > 2) {
-      // Row complete — animate trace along the slope, then finalize
+      showFeedback(`✅ ${label} = ${expected}`, "success");
+      // Animate trace from previous point to new point, then advance to m_n
       const fromPt = path[path.length - 1];
       const toPt = { x: rowData[currentRow].x, y: rowData[currentRow].y };
       animateSegment(fromPt, toPt, () => {
         path.push(toPt);
         traceSegment = null;
         updateChart();
-        hideOverlay();
+        currentCol = 2;
+        buildTable();
+        updatePrompt();
+      });
+    } else {
+      // m_n confirmed — update slope preview, then advance row
+      rowData[currentRow].m = expected;
+      slopePreview = { x: rowData[currentRow].x, y: rowData[currentRow].y, slope: expected };
+      updateChart();
+      showFeedback(`✅ ${label} = ${expected}`, "success");
 
-        const stepsNeeded = stages[currentStage].stepsNeeded;
-        const stepsCompleted = path.length - 1;
+      const stepsNeeded = stages[currentStage].stepsNeeded;
+      const stepsCompleted = path.length - 1;
 
-        if (stepsCompleted >= stepsNeeded) {
-          if (currentStage < stages.length - 1) {
-            showFeedback(`🎉 Stage complete! You plotted ${stepsNeeded} steps with h = ${stepSize}.`, "success");
-            reflectionSec.classList.remove("hidden");
-          } else {
-            showFeedback("🏆 Challenge complete! Both stages done.", "success");
-          }
-          currentRow++;
-          currentCol = 0;
-          buildTable();
-          updatePrompt();
-          return;
+      if (stepsCompleted >= stepsNeeded) {
+        if (currentStage < stages.length - 1) {
+          showFeedback(`🎉 Stage complete! You plotted ${stepsNeeded} steps with h = ${stepSize}.`, "success");
+          reflectionSec.classList.remove("hidden");
+        } else {
+          showFeedback("🏆 Challenge complete! Both stages done.", "success");
         }
-
         currentRow++;
         currentCol = 0;
         buildTable();
         updatePrompt();
-      });
-      return;
-    }
+        return;
+      }
 
-    buildTable();
-    updatePrompt();
+      currentRow++;
+      currentCol = 0;
+      buildTable();
+      updatePrompt();
+    }
   } else {
     // Wrong
     shakInput(input);
