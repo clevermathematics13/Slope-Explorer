@@ -294,9 +294,6 @@ function validateEntry(input, which) {
     if (!rowData[currentRow]) rowData[currentRow] = {};
     if (which === "x") {
       rowData[currentRow].x = expected;
-      // Clear slope preview from previous row
-      slopePreview = null;
-      updateChart();
     }
     if (which === "y") {
       rowData[currentRow].y = expected;
