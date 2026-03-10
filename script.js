@@ -276,7 +276,12 @@ function validateEntry(input, which) {
     input.disabled = true;
 
     if (!rowData[currentRow]) rowData[currentRow] = {};
-    if (which === "x") rowData[currentRow].x = expected;
+    if (which === "x") {
+      rowData[currentRow].x = expected;
+      // Clear slope preview from previous row
+      slopePreview = null;
+      updateChart();
+    }
     if (which === "m") {
       rowData[currentRow].m = expected;
       // Show slope preview line from current point
@@ -286,8 +291,6 @@ function validateEntry(input, which) {
     }
     if (which === "y") {
       rowData[currentRow].y = expected;
-      // Clear slope preview — animate trace to the new point
-      slopePreview = null;
     }
 
     showFeedback(`✅ ${label} = ${expected}`, "success");
@@ -406,6 +409,17 @@ function updateChartRaw() {
     datasets.push({
       data: [{ x: p2.x, y: p1.y }, { x: p2.x, y: p2.y }],
       borderColor: "#f87171", borderWidth: 2, borderDash: [4, 3],
+      pointRadius: 0, showLine: true
+    });
+  }
+
+  if (slopePreview) {
+    const sp = slopePreview;
+    const xEnd = Math.max(5, ...path.map(p => p.x)) + 4;
+    const yEnd = sp.y + sp.slope * (xEnd - sp.x);
+    datasets.push({
+      data: [{ x: sp.x, y: sp.y }, { x: xEnd, y: yEnd }],
+      borderColor: "#facc15", borderWidth: 2, borderDash: [6, 4],
       pointRadius: 0, showLine: true
     });
   }
