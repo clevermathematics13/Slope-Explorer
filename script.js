@@ -284,9 +284,9 @@ function validateEntry(input, which) {
     }
     if (which === "m") {
       rowData[currentRow].m = expected;
-      // Show slope preview line from current point
+      // Show slope preview using m_{n-1} (slope at current point that determines the step)
       const prev2 = path[path.length - 1];
-      slopePreview = { x: prev2.x, y: prev2.y, slope: expected };
+      slopePreview = { x: prev2.x, y: prev2.y, slope: slopeAt(prev2.x) };
       updateChart();
     }
     if (which === "y") {
