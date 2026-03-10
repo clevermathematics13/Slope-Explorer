@@ -28,6 +28,9 @@ function slopeAt(x) { return x + 1; }
 // Round to avoid floating-point noise
 function r(v) { return Math.round(v * 10000) / 10000; }
 
+// Slope preview line: { x, y, slope } or null
+let slopePreview = null;
+
 // ── Chart Setup ─────────────────────────────────────────
 const slopeChart = new Chart(ctx, {
   type: "scatter",
@@ -102,6 +105,23 @@ function updateChart() {
       data: [{ x: p2.x, y: p1.y }, { x: p2.x, y: p2.y }],
       borderColor: "#f87171", borderWidth: 2, borderDash: [4, 3],
       pointRadius: 0, showLine: true
+    });
+  }
+
+  // Slope preview dashed line (shown after m_n is entered, before y_n)
+  if (slopePreview) {
+    const sp = slopePreview;
+    // Extend the line from the current point to the right edge of the visible graph
+    const xEnd = Math.max(5, ...path.map(p => p.x)) + 4;
+    const yEnd = sp.y + sp.slope * (xEnd - sp.x);
+    datasets.push({
+      label: "Slope preview",
+      data: [{ x: sp.x, y: sp.y }, { x: xEnd, y: yEnd }],
+      borderColor: "#facc15",
+      borderWidth: 2,
+      borderDash: [6, 4],
+      pointRadius: 0,
+      showLine: true
     });
   }
 
@@ -237,8 +257,18 @@ function validateEntry(input, which) {
 
     if (!rowData[currentRow]) rowData[currentRow] = {};
     if (which === "x") rowData[currentRow].x = expected;
-    if (which === "m") rowData[currentRow].m = expected;
-    if (which === "y") rowData[currentRow].y = expected;
+    if (which === "m") {
+      rowData[currentRow].m = expected;
+      // Show slope preview line from current point
+      const prev2 = path[path.length - 1];
+      slopePreview = { x: prev2.x, y: prev2.y, slope: expected };
+      updateChart();
+    }
+    if (which === "y") {
+      rowData[currentRow].y = expected;
+      // Clear slope preview — the real segment will replace it
+      slopePreview = null;
+    }
 
     showFeedback(`✅ ${label} = ${expected}`, "success");
 
@@ -337,6 +367,7 @@ function advanceStage() {
   rowData = [];
   currentRow = 1;
   currentCol = 0;
+  slopePreview = null;
   reflectionSec.classList.add("hidden");
   feedbackBox.className = "feedback-box hidden";
   stepSizeEl.textContent = stepSize;
@@ -367,6 +398,7 @@ function resetAll() {
   rowData = [];
   currentRow = 1;
   currentCol = 0;
+  slopePreview = null;
   reflectionSec.classList.add("hidden");
   feedbackBox.className = "feedback-box hidden";
   stepSizeEl.textContent = stepSize;
