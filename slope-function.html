@@ -346,6 +346,10 @@
             input.classList.add("correct");
             input.disabled = true;
             check.textContent = "✅";
+            // Move focus to the next unanswered input
+            const allInputs = [...tryTbody.querySelectorAll("input")];
+            const next = allInputs.find(inp => !inp.disabled);
+            if (next) next.focus();
           } else {
             input.classList.add("wrong");
             check.textContent = "❌";
