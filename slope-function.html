@@ -192,53 +192,25 @@
     <!-- Section 3: Try the Machine -->
     <section class="lesson-section">
       <h2>🧪 Try the Machine</h2>
-      <p>Feed the slope machine different y-values. Type the slope it should output, then press <strong>Enter</strong>.</p>
+      <p>Feed the slope machine different points. Type the slope it should output, then press <strong>Enter</strong>. Pay close attention to the rule — it changes!</p>
 
       <div class="interactive-box">
-        <h3>Rule: slope = y</h3>
+        <div id="round-indicator" style="font-size:0.8rem; color:#94a3b8; margin-bottom:0.3rem;"></div>
+        <h3 id="try-rule"></h3>
         <table class="try-table" id="try-table">
           <thead>
             <tr>
               <th>Point</th>
-              <th>y-value</th>
+              <th>x</th>
+              <th>y</th>
               <th>Slope = ?</th>
               <th></th>
             </tr>
           </thead>
-          <tbody>
-            <tr data-answer="1">
-              <td>(0, 1)</td>
-              <td>1</td>
-              <td><input type="text" inputmode="decimal" placeholder="?"></td>
-              <td class="check-cell"></td>
-            </tr>
-            <tr data-answer="2">
-              <td>(1, 2)</td>
-              <td>2</td>
-              <td><input type="text" inputmode="decimal" placeholder="?"></td>
-              <td class="check-cell"></td>
-            </tr>
-            <tr data-answer="4">
-              <td>(2, 4)</td>
-              <td>4</td>
-              <td><input type="text" inputmode="decimal" placeholder="?"></td>
-              <td class="check-cell"></td>
-            </tr>
-            <tr data-answer="0.5">
-              <td>(3, 0.5)</td>
-              <td>0.5</td>
-              <td><input type="text" inputmode="decimal" placeholder="?"></td>
-              <td class="check-cell"></td>
-            </tr>
-            <tr data-answer="10">
-              <td>(1, 10)</td>
-              <td>10</td>
-              <td><input type="text" inputmode="decimal" placeholder="?"></td>
-              <td class="check-cell"></td>
-            </tr>
-          </tbody>
+          <tbody id="try-tbody"></tbody>
         </table>
         <div id="try-feedback" class="interactive-result" style="margin-top:0.5rem;"></div>
+        <button id="next-round-btn" class="next-btn" style="display:none; margin-top:0.75rem; font-size:0.9rem; padding:0.5rem 1.2rem;">Next Rule →</button>
       </div>
     </section>
 
@@ -248,12 +220,12 @@
 
       <div class="concept-card yellow">
         <h3>The Pattern</h3>
-        <p>Every time, the slope is <strong>exactly the y-value</strong>. It doesn't matter what x is — only the height matters.</p>
-        <p>At y = 1, the slope is gentle (1). At y = 10, it's very steep (10). At y = 0.5, it's barely rising (0.5).</p>
+        <p>Different rules produce different slopes! The slope machine can depend on <strong>y alone</strong> (slope = y), <strong>x alone</strong> (slope = x), or <strong>both x and y</strong> (slope = x + y).</p>
+        <p>With <em>slope = y</em>, only the height matters — the x-value is irrelevant. With <em>slope = x</em>, it's the opposite — vertical position doesn't matter, only <em>where</em> along the x-axis you are. And <em>slope = x + y</em> mixes both.</p>
       </div>
 
       <div class="analogy">
-        <strong>🏔️ Think of it this way:</strong> Imagine a hill where the steepness depends on your altitude. At sea level, the ground is nearly flat. But the higher you climb, the steeper it gets —– like a mountain that curves up sharply the higher you go. That's exactly what Δy/Δx = y describes.
+        <strong>🏔️ Think of it this way:</strong> A differential equation is just a <strong>rule that assigns a slope to every point</strong>. What determines the slope depends entirely on the rule. For our Path Builder Challenge we'll use Δy/Δx = y — where the higher you are, the steeper you climb — but now you know that's just <em>one</em> possible machine.
       </div>
     </section>
 
@@ -293,40 +265,122 @@
   </footer>
 
   <script>
-    // ── Try-the-Machine interactive ──
-    document.querySelectorAll("#try-table tbody tr").forEach(row => {
-      const answer = parseFloat(row.dataset.answer);
-      const input = row.querySelector("input");
-      const check = row.querySelector(".check-cell");
+    // ── Try-the-Machine interactive (multi-round) ──
+    const tryRounds = [
+      {
+        rule: "slope = y",
+        rows: [
+          { point: "(0, 1)",   x: 0, y: 1,   answer: 1   },
+          { point: "(1, 2)",   x: 1, y: 2,   answer: 2   },
+          { point: "(2, 4)",   x: 2, y: 4,   answer: 4   },
+          { point: "(3, 0.5)", x: 3, y: 0.5, answer: 0.5 },
+        ]
+      },
+      {
+        rule: "slope = x",
+        rows: [
+          { point: "(1, 3)", x: 1, y: 3, answer: 1 },
+          { point: "(2, 1)", x: 2, y: 1, answer: 2 },
+          { point: "(0, 5)", x: 0, y: 5, answer: 0 },
+          { point: "(3, 2)", x: 3, y: 2, answer: 3 },
+        ]
+      },
+      {
+        rule: "slope = x + y",
+        rows: [
+          { point: "(1, 2)", x: 1, y: 2, answer: 3 },
+          { point: "(2, 3)", x: 2, y: 3, answer: 5 },
+          { point: "(0, 1)", x: 0, y: 1, answer: 1 },
+          { point: "(3, 1)", x: 3, y: 1, answer: 4 },
+        ]
+      }
+    ];
 
-      input.addEventListener("keydown", (e) => {
-        if (e.key !== "Enter") return;
-        const val = parseFloat(input.value);
-        if (Number.isNaN(val)) return;
+    let currentRound = 0;
+    const tryTbody    = document.getElementById("try-tbody");
+    const tryRule     = document.getElementById("try-rule");
+    const roundLabel  = document.getElementById("round-indicator");
+    const tryFeedback = document.getElementById("try-feedback");
+    const nextBtn     = document.getElementById("next-round-btn");
 
-        if (Math.abs(val - answer) < 0.01) {
-          input.classList.remove("wrong");
-          input.classList.add("correct");
-          input.disabled = true;
-          check.textContent = "✅";
-        } else {
-          input.classList.add("wrong");
-          check.textContent = "❌";
-          setTimeout(() => {
+    // Parse numbers like "0.5", "1/2", "-3/4"
+    function parseNumber(str) {
+      str = str.trim();
+      const frac = str.match(/^(-?\d+(?:\.\d+)?)\s*\/\s*(-?\d+(?:\.\d+)?)$/);
+      if (frac) {
+        const denom = parseFloat(frac[2]);
+        if (denom === 0) return NaN;
+        return parseFloat(frac[1]) / denom;
+      }
+      return parseFloat(str);
+    }
+
+    function loadRound(index) {
+      const round = tryRounds[index];
+      roundLabel.textContent = `Round ${index + 1} of ${tryRounds.length}`;
+      tryRule.textContent = `Rule: ${round.rule}`;
+      tryFeedback.textContent = "";
+      nextBtn.style.display = "none";
+      tryTbody.innerHTML = "";
+
+      round.rows.forEach(r => {
+        const tr = document.createElement("tr");
+        tr.innerHTML =
+          `<td>${r.point}</td>` +
+          `<td>${r.x}</td>` +
+          `<td>${r.y}</td>` +
+          `<td><input type="text" inputmode="decimal" placeholder="?"></td>` +
+          `<td class="check-cell"></td>`;
+        tryTbody.appendChild(tr);
+
+        const input = tr.querySelector("input");
+        const check = tr.querySelector(".check-cell");
+
+        input.addEventListener("keydown", (e) => {
+          if (e.key !== "Enter") return;
+          const val = parseNumber(input.value);
+          if (Number.isNaN(val)) return;
+
+          if (Math.abs(val - r.answer) < 0.01) {
             input.classList.remove("wrong");
-            check.textContent = "";
-          }, 600);
-        }
+            input.classList.add("correct");
+            input.disabled = true;
+            check.textContent = "✅";
+          } else {
+            input.classList.add("wrong");
+            check.textContent = "❌";
+            setTimeout(() => {
+              input.classList.remove("wrong");
+              check.textContent = "";
+            }, 600);
+          }
 
-        // Check if all done
-        const allDone = [...document.querySelectorAll("#try-table tbody input")]
-          .every(inp => inp.disabled);
-        if (allDone) {
-          document.getElementById("try-feedback").textContent =
-            "🎉 Perfect! You've mastered the slope machine. The slope always equals the y-value.";
-        }
+          // Check if round complete
+          const allDone = [...tryTbody.querySelectorAll("input")]
+            .every(inp => inp.disabled);
+          if (allDone) {
+            if (index < tryRounds.length - 1) {
+              tryFeedback.textContent = `✅ Nice! You cracked "${round.rule}". Ready for a new rule?`;
+              nextBtn.style.display = "inline-block";
+            } else {
+              tryFeedback.textContent =
+                "🎉 You've mastered all three slope machines! Notice how the rule can depend on x, y, or both.";
+            }
+          }
+        });
       });
+
+      // Focus the first input
+      const firstInput = tryTbody.querySelector("input");
+      if (firstInput) firstInput.focus();
+    }
+
+    nextBtn.addEventListener("click", () => {
+      currentRound++;
+      loadRound(currentRound);
     });
+
+    loadRound(0);
 
     // ── Slope Field Visualization ──
     const canvas = document.getElementById("slopeField");
