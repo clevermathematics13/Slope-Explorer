@@ -201,8 +201,6 @@
           <thead>
             <tr>
               <th>Point</th>
-              <th>x</th>
-              <th>y</th>
               <th>Slope = ?</th>
               <th></th>
             </tr>
@@ -327,8 +325,6 @@
         const tr = document.createElement("tr");
         tr.innerHTML =
           `<td>${r.point}</td>` +
-          `<td>${r.x}</td>` +
-          `<td>${r.y}</td>` +
           `<td><input type="text" inputmode="decimal" placeholder="?"></td>` +
           `<td class="check-cell"></td>`;
         tryTbody.appendChild(tr);
