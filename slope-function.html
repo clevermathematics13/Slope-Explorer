@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fira+Code&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
-  <script src="https://www.desmos.com/api/v1.9/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0faa6"></script>
+  <script src="https://www.desmos.com/api/v1.7/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0faa6"></script>
   <link rel="stylesheet" href="lesson.css">
   <style>
     /* Slope machine visual */
@@ -618,6 +618,7 @@
     }
 
     function updateDesmos(round, revealed) {
+      if (!desmosCalc) initDesmos();
       if (!desmosCalc) return;
       const xs = round.rows.map(r => r.x);
       const ys = round.rows.map(r => r.y);
