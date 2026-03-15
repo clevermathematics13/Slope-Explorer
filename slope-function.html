@@ -430,6 +430,7 @@
                 <tbody id="try-tbody"></tbody>
               </table>
               <div id="try-feedback" class="interactive-result" style="margin-top:0.5rem;"></div>
+              <button id="autocomplete-btn" style="margin-top:0.5rem; font-size:0.8rem; padding:0.35rem 0.9rem; background:#1e3a5f; color:#94a3b8; border:1px solid #334155; border-radius:0.4rem; cursor:pointer;">⚙ Auto-fill (dev)</button>
               <button id="next-round-btn" class="next-btn" style="display:none; margin-top:0.75rem; font-size:0.9rem; padding:0.5rem 1.2rem;">Next Rule →</button>
             </div>
             <div class="try-graph-wrap" id="desmosCalc"></div>
@@ -793,6 +794,17 @@
     nextBtn.addEventListener("click", () => {
       currentRound++;
       loadRound(currentRound);
+    });
+
+    document.getElementById("autocomplete-btn").addEventListener("click", () => {
+      const round = tryRounds[currentRound];
+      const inputs = [...tryTbody.querySelectorAll("input")];
+      inputs.forEach((input, i) => {
+        if (!input.disabled) input.value = String(round.rows[i].answer);
+      });
+      // find and call submitAll via the Enter key on first enabled input
+      const first = inputs.find(inp => !inp.disabled);
+      if (first) { first.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true })); }
     });
 
     // Press Enter anywhere on the page to advance when Next Rule button is visible
