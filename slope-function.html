@@ -543,9 +543,14 @@
   </footer>
 
   <script>
-    // ── Try-the-Gradient-Function-Machine interactive (multi-round, randomised) ──
+    // ── Try-the-Gradient-of-a-Function-Machine interactive (multi-round, randomised) ──
+    function fmtNum(n) {
+      // Display integers cleanly; 2 dp otherwise
+      if (Math.abs(n - Math.round(n)) < 0.001) return String(Math.round(n));
+      return (Math.round(n * 100) / 100).toString();
+    }
     function mkPt(x, y) {
-      const fmt = n => (n < 0 ? '\u2212' + Math.abs(n) : String(n));
+      const fmt = n => n < 0 ? '\u2212' + fmtNum(Math.abs(n)) : fmtNum(n);
       return '(' + fmt(x) + ', ' + fmt(y) + ')';
     }
     function shuffleArr(arr) {
@@ -556,51 +561,49 @@
       }
       return a;
     }
+    function rnd2(n) { return Math.round(n * 100) / 100; }
 
     const roundDefs = [
       {
         rule: "slope = y + 1",
         slopeFn: (x, y) => y + 1,
-        candidates: [
-          { x: -2, y:  3 }, { x: -1, y:  0 }, { x:  0, y:  2 },
-          { x:  1, y: -3 }, { x:  1, y:  4 }, { x:  2, y: -1 },
-          { x: -1, y: -2 }, { x:  0, y: -4 }, { x:  3, y: -2 },
-          { x: -3, y:  2 }, { x:  2, y:  3 }, { x: -2, y: -1 },
-        ]
+        // General solution: y = C·eˣ − 1
+        curveFn: C => x => C * Math.exp(x) - 1,
+        curveVariants: [0.5, 1, 1.5, 2],
+        sampleXs: [-1, 0, 0.5, 1],
       },
       {
         rule: "slope = y / x",
-        slopeFn: (x, y) => x !== 0 ? y / x : NaN,
-        candidates: [
-          { x:  1, y: -3 }, { x:  2, y:  5 }, { x: -2, y:  4 },
-          { x:  3, y:  6 }, { x:  1, y:  2 }, { x:  2, y: -4 },
-          { x: -1, y:  3 }, { x:  3, y:  9 }, { x: -3, y:  6 },
-          { x:  4, y:  2 }, { x: -2, y: -6 }, { x:  2, y: -6 },
-        ]
+        slopeFn: (x, y) => y / x,
+        // General solution: y = C·x  (lines through the origin)
+        curveFn: C => x => C * x,
+        curveVariants: [-2, -1.5, -1, 0.5, 1, 1.5, 2, 3],
+        sampleXs: [-2, -1, 1, 2],
       },
       {
         rule: "slope = x \u2212 2y + 1",
         slopeFn: (x, y) => x - 2 * y + 1,
-        candidates: [
-          { x:  1, y:  2 }, { x:  2, y:  3 }, { x:  0, y:  1 },
-          { x:  3, y:  1 }, { x:  2, y:  1 }, { x:  1, y: -1 },
-          { x:  0, y: -1 }, { x:  4, y:  2 }, { x:  2, y: -2 },
-          { x:  1, y:  3 }, { x:  3, y:  3 }, { x: -1, y:  1 },
-        ]
+        // General solution: y = (2x+1)/4 + C·e^(−2x)
+        curveFn: C => x => (2 * x + 1) / 4 + C * Math.exp(-2 * x),
+        curveVariants: [0.5, 0.75, 1.0, 1.5],
+        sampleXs: [0, 0.5, 1, 1.5],
       }
     ];
 
-    // Pick 4 random candidates per round on every page load
+    // Build rounds: pick one random solution curve per round, sample 4 points from it
     const tryRounds = roundDefs.map(def => {
-      const picked = shuffleArr(def.candidates).slice(0, 4);
+      const C = def.curveVariants[Math.floor(Math.random() * def.curveVariants.length)];
+      const yFn = def.curveFn(C);
+      const xs  = shuffleArr(def.sampleXs);
       return {
         rule: def.rule,
+        C, yFn,
         slopeFn: def.slopeFn,
-        rows: picked.map(c => ({
-          point: mkPt(c.x, c.y),
-          x: c.x, y: c.y,
-          answer: Math.round(def.slopeFn(c.x, c.y) * 10000) / 10000
-        }))
+        sampleXs: def.sampleXs,
+        rows: xs.map(x => {
+          const y = rnd2(yFn(x));
+          return { point: mkPt(x, y), x, y, answer: rnd2(def.slopeFn(x, y)) };
+        })
       };
     });
 
@@ -716,7 +719,34 @@
         ctx2.stroke();
       });
 
-      // Question point dots
+      // Reveal full solution curve once all points are answered
+      const allRevealed = round.rows.length > 0 && revealed.size === round.rows.length;
+      if (allRevealed && round.yFn) {
+        ctx2.strokeStyle = "rgba(167, 139, 250, 0.9)";
+        ctx2.lineWidth = 2.2;
+        ctx2.setLineDash([]);
+        ctx2.beginPath();
+        let cStarted = false;
+        for (let cx = xMin + 0.05; cx <= xMax - 0.05; cx += 0.025) {
+          if (Math.abs(cx) < 0.05 && round.rule.includes("y / x")) { cStarted = false; continue; } // skip x=0 singularity
+          const cy = round.yFn(cx);
+          if (!isFinite(cy) || cy < yMin - 0.5 || cy > yMax + 0.5) { cStarted = false; continue; }
+          if (!cStarted) { ctx2.moveTo(toSX(cx), toSY(cy)); cStarted = true; }
+          else ctx2.lineTo(toSX(cx), toSY(cy));
+        }
+        ctx2.stroke();
+        // Label near the middle-right
+        const labelX = xMin + (xMax - xMin) * 0.65;
+        const labelY = round.yFn(labelX);
+        if (isFinite(labelY) && labelY > yMin + 0.3 && labelY < yMax - 0.3) {
+          ctx2.font = "bold 9px 'Fira Code', monospace";
+          ctx2.fillStyle = "rgba(167, 139, 250, 0.85)";
+          ctx2.textAlign = "left";
+          ctx2.fillText("\u2190 solution curve", toSX(labelX) + 4, toSY(labelY) - 5);
+        }
+      }
+
+      // Question point dots (drawn on top of curve)
       round.rows.forEach((r, i) => {
         const done = revealed.has(i);
         ctx2.beginPath();
@@ -791,7 +821,7 @@
           const check = tr.querySelector(".check-cell");
           if (input.disabled) return;
           const val = parseNumber(input.value);
-          if (!Number.isNaN(val) && Math.abs(val - round.rows[i].answer) < 0.01) {
+          if (!Number.isNaN(val) && Math.abs(val - round.rows[i].answer) < 0.06) {
             input.classList.remove("wrong");
             input.classList.add("correct");
             input.disabled = true;
