@@ -391,11 +391,11 @@
           <ul class="checklist-list" id="rules-checklist">
             <li id="check-0" class="checklist-item pending">
               <span class="cl-icon">○</span>
-              <span class="cl-label">slope = y</span>
+              <span class="cl-label">slope = y − 6</span>
             </li>
             <li id="check-1" class="checklist-item pending">
               <span class="cl-icon">○</span>
-              <span class="cl-label">slope = 3x</span>
+              <span class="cl-label">slope = 3x + 1</span>
             </li>
             <li id="check-2" class="checklist-item pending">
               <span class="cl-icon">○</span>
@@ -429,12 +429,12 @@
 
       <div class="concept-card yellow">
         <h3>The Pattern</h3>
-        <p>Different rules produce different slopes! The gradient function machine can depend on <strong>y alone</strong> (slope = y), <strong>x alone</strong> (slope = 3x), or <strong>both x and y</strong> (slope = x - 2y + 1).</p>
-        <p>With <em>slope = y</em>, only the height matters — the x-value is irrelevant. With <em>slope = 3x</em>, it's the opposite — vertical position doesn't matter, only <em>where</em> along the x-axis you are (scaled by 3). And <em>slope = x - 2y + 1</em> mixes both, with y having stronger influence.</p>
+        <p>Different rules produce different slopes! The gradient function machine can depend on <strong>y alone</strong> (slope = y − 6), <strong>x alone</strong> (slope = 3x + 1), or <strong>both x and y</strong> (slope = x - 2y + 1).</p>
+        <p>With <em>slope = y − 6</em>, only the height matters — the x-value is irrelevant. With <em>slope = 3x + 1</em>, vertical position doesn't matter, only <em>where</em> along the x-axis you are. And <em>slope = x - 2y + 1</em> mixes both, with y having stronger influence.</p>
       </div>
 
       <div class="analogy">
-        <strong>🏔️ Think of it this way:</strong> A differential equation is just a <strong>rule that assigns a slope to every point</strong>. What determines the slope depends entirely on the rule. For our Path Builder Challenge we'll use Δy/Δx = y — where the higher you are, the steeper you climb — but now you know that's just <em>one</em> possible gradient function.
+        <strong>🏔️ Think of it this way:</strong> A differential equation is just a <strong>rule that assigns a slope to every point</strong>. What determines the slope depends entirely on the rule. For our Path Builder Challenge we'll use Δy/Δx = y — where the higher you are, the steeper you climb — but now you know that's just <em>one</em> possible gradient function. Others, like slope = y − 6 or slope = 3x + 1, work very differently.
       </div>
     </section>
 
@@ -518,21 +518,21 @@
     // ── Try-the-Machine interactive (multi-round) ──
     const tryRounds = [
       {
-        rule: "slope = y",
+        rule: "slope = y − 6",
         rows: [
-          { point: "(0, 1)",   x: 0, y: 1,   answer: 1   },
-          { point: "(1, 2)",   x: 1, y: 2,   answer: 2   },
-          { point: "(2, 4)",   x: 2, y: 4,   answer: 4   },
-          { point: "(3, 0.5)", x: 3, y: 0.5, answer: 0.5 },
+          { point: "(0, 1)",   x: 0, y: 1,   answer: -5   },
+          { point: "(1, 2)",   x: 1, y: 2,   answer: -4   },
+          { point: "(2, 4)",   x: 2, y: 4,   answer: -2   },
+          { point: "(3, 0.5)", x: 3, y: 0.5, answer: -5.5 },
         ]
       },
       {
-        rule: "slope = 3x",
+        rule: "slope = 3x + 1",
         rows: [
-          { point: "(1, 3)", x: 1, y: 3, answer: 3 },
-          { point: "(2, 1)", x: 2, y: 1, answer: 6 },
-          { point: "(0, 5)", x: 0, y: 5, answer: 0 },
-          { point: "(3, 2)", x: 3, y: 2, answer: 9 },
+          { point: "(1, 3)", x: 1, y: 3, answer: 4  },
+          { point: "(2, 1)", x: 2, y: 1, answer: 7  },
+          { point: "(0, 5)", x: 0, y: 5, answer: 1  },
+          { point: "(3, 2)", x: 3, y: 2, answer: 10 },
         ]
       },
       {
