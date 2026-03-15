@@ -263,6 +263,58 @@
       color: #94a3b8;
     }
 
+    /* Try-the-Gradient-Function-Machine layout */
+    .try-layout {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+    .try-checklist {
+      flex: 0 0 180px;
+      background: #0b1327;
+      border: 1px solid #334155;
+      border-radius: 0.65rem;
+      padding: 0.85rem 0.9rem;
+    }
+    .checklist-title {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #94a3b8;
+      margin-bottom: 0.65rem;
+    }
+    .checklist-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+    }
+    .checklist-item {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-size: 0.88rem;
+      border-radius: 0.4rem;
+      padding: 0.3rem 0.4rem;
+      transition: background 0.2s;
+    }
+    .checklist-item.pending .cl-icon { color: #475569; }
+    .checklist-item.pending .cl-label { color: #94a3b8; }
+    .checklist-item.active {
+      background: rgba(250, 204, 21, 0.08);
+    }
+    .checklist-item.active .cl-icon { color: #facc15; }
+    .checklist-item.active .cl-label { color: #fef9c3; font-weight: 600; }
+    .checklist-item.done {
+      background: rgba(74, 222, 128, 0.08);
+    }
+    .checklist-item.done .cl-icon { color: #4ade80; }
+    .checklist-item.done .cl-label { color: #bbf7d0; }
+
     @keyframes shake {
       0%, 100% { transform: translateX(0); }
       25% { transform: translateX(-4px); }
@@ -275,13 +327,13 @@
   <nav class="lesson-nav">
     <a href="index.html">1 — Intro</a>
     <span class="sep">›</span>
-    <a href="slope-function.html" class="active">2 — The Slope Machine</a>
+    <a href="slope-function.html" class="active">2 — The Gradient Function Machine</a>
     <span class="sep">›</span>
     <a href="path-builder.html">3 — Path Builder</a>
   </nav>
 
   <header class="lesson-header">
-    <h1>⚙️ The Slope Machine</h1>
+    <h1>⚙️ The Gradient Function Machine</h1>
     <p class="subtitle">Understanding a function that outputs slope instead of height</p>
   </header>
 
@@ -299,8 +351,8 @@
 
     <!-- Section 2: The Machine -->
     <section class="lesson-section">
-      <h2>Meet the Slope Machine</h2>
-      <p>Think of the slope rule as a <strong>machine</strong>. You feed it a point (a y-value), and it tells you the slope at that location.</p>
+      <h2>Meet the Gradient Function Machine</h2>
+      <p>Think of the slope rule as a <strong>machine</strong>. You feed it a point, and it tells you the slope — the gradient — at that location.</p>
 
       <div class="machine-graphic">
         <div class="machine-box machine-input-box">
@@ -309,7 +361,7 @@
         </div>
         <div class="machine-arrow">→</div>
         <div class="machine-box machine-rule-box">
-          <div class="label">The machine (rule)</div>
+          <div class="label">Gradient Function (rule)</div>
           <div class="value">slope = y</div>
         </div>
         <div class="machine-arrow">→</div>
@@ -319,7 +371,7 @@
         </div>
       </div>
 
-      <p>Our particular machine has a very simple rule: <strong>the slope equals the y-value</strong>. That's it!</p>
+      <p>Our particular gradient function machine has a very simple rule: <strong>the slope equals the y-value</strong>. That's it!</p>
 
       <div class="concept-card">
         <h3>What does this mean in plain English?</h3>
@@ -327,26 +379,47 @@
       </div>
     </section>
 
-    <!-- Section 3: Try the Machine -->
+    <!-- Section 3: Try the Gradient Function Machine -->
     <section class="lesson-section">
-      <h2>🧪 Try the Machine</h2>
-      <p>Feed the slope machine different points. Type the slope it should output, then press <strong>Enter</strong>. Pay close attention to the rule — it changes!</p>
+      <h2>🧪 Try the Gradient Function Machine</h2>
+      <p>Feed the gradient function machine different points. Type the slope it should output, then press <strong>Enter</strong>. Work through each rule — a checklist on the left tracks your progress.</p>
 
-      <div class="interactive-box">
-        <div id="round-indicator" style="font-size:0.8rem; color:#94a3b8; margin-bottom:0.3rem;"></div>
-        <h3 id="try-rule"></h3>
-        <table class="try-table" id="try-table">
-          <thead>
-            <tr>
-              <th>Point</th>
-              <th>Slope = ?</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody id="try-tbody"></tbody>
-        </table>
-        <div id="try-feedback" class="interactive-result" style="margin-top:0.5rem;"></div>
-        <button id="next-round-btn" class="next-btn" style="display:none; margin-top:0.75rem; font-size:0.9rem; padding:0.5rem 1.2rem;">Next Rule →</button>
+      <div class="try-layout">
+        <!-- Left: progress checklist -->
+        <div class="try-checklist">
+          <div class="checklist-title">Rules reviewed</div>
+          <ul class="checklist-list" id="rules-checklist">
+            <li id="check-0" class="checklist-item pending">
+              <span class="cl-icon">○</span>
+              <span class="cl-label">slope = y</span>
+            </li>
+            <li id="check-1" class="checklist-item pending">
+              <span class="cl-icon">○</span>
+              <span class="cl-label">slope = 3x</span>
+            </li>
+            <li id="check-2" class="checklist-item pending">
+              <span class="cl-icon">○</span>
+              <span class="cl-label">slope = x − 2y + 1</span>
+            </li>
+          </ul>
+        </div>
+        <!-- Right: interactive exercise -->
+        <div class="interactive-box" style="flex:1 1 300px; min-width:0;">
+          <div id="round-indicator" style="font-size:0.8rem; color:#94a3b8; margin-bottom:0.3rem;"></div>
+          <h3 id="try-rule"></h3>
+          <table class="try-table" id="try-table">
+            <thead>
+              <tr>
+                <th>Point</th>
+                <th>Slope = ?</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="try-tbody"></tbody>
+          </table>
+          <div id="try-feedback" class="interactive-result" style="margin-top:0.5rem;"></div>
+          <button id="next-round-btn" class="next-btn" style="display:none; margin-top:0.75rem; font-size:0.9rem; padding:0.5rem 1.2rem;">Next Rule →</button>
+        </div>
       </div>
     </section>
 
@@ -356,12 +429,12 @@
 
       <div class="concept-card yellow">
         <h3>The Pattern</h3>
-        <p>Different rules produce different slopes! The slope machine can depend on <strong>y alone</strong> (slope = y), <strong>x alone</strong> (slope = 3x), or <strong>both x and y</strong> (slope = x - 2y + 1).</p>
+        <p>Different rules produce different slopes! The gradient function machine can depend on <strong>y alone</strong> (slope = y), <strong>x alone</strong> (slope = 3x), or <strong>both x and y</strong> (slope = x - 2y + 1).</p>
         <p>With <em>slope = y</em>, only the height matters — the x-value is irrelevant. With <em>slope = 3x</em>, it's the opposite — vertical position doesn't matter, only <em>where</em> along the x-axis you are (scaled by 3). And <em>slope = x - 2y + 1</em> mixes both, with y having stronger influence.</p>
       </div>
 
       <div class="analogy">
-        <strong>🏔️ Think of it this way:</strong> A differential equation is just a <strong>rule that assigns a slope to every point</strong>. What determines the slope depends entirely on the rule. For our Path Builder Challenge we'll use Δy/Δx = y — where the higher you are, the steeper you climb — but now you know that's just <em>one</em> possible machine.
+        <strong>🏔️ Think of it this way:</strong> A differential equation is just a <strong>rule that assigns a slope to every point</strong>. What determines the slope depends entirely on the rule. For our Path Builder Challenge we'll use Δy/Δx = y — where the higher you are, the steeper you climb — but now you know that's just <em>one</em> possible gradient function.
       </div>
     </section>
 
@@ -404,7 +477,7 @@
         <p><strong>4.</strong> Repeat from step 1</p>
       </div>
 
-      <p>The slope machine is the engine that drives every step. Now that you understand how it works, you're ready to build paths!</p>
+      <p>The gradient function machine is the engine that drives every step. Now that you understand how it works, you're ready to build paths!</p>
 
       <div class="interactive-box">
         <h3>Checkpoint: Prove Your Understanding</h3>
@@ -480,6 +553,25 @@
     const tryFeedback = document.getElementById("try-feedback");
     const nextBtn     = document.getElementById("next-round-btn");
 
+    function updateChecklist(completedIndex) {
+      tryRounds.forEach((_, i) => {
+        const item = document.getElementById(`check-${i}`);
+        if (!item) return;
+        item.classList.remove("pending", "active", "done");
+        const icon = item.querySelector(".cl-icon");
+        if (i < completedIndex) {
+          item.classList.add("done");
+          icon.textContent = "✔";
+        } else if (i === completedIndex) {
+          item.classList.add("active");
+          icon.textContent = "▶";
+        } else {
+          item.classList.add("pending");
+          icon.textContent = "○";
+        }
+      });
+    }
+
     // Parse numbers like "0.5", "1/2", "-3/4"
     function parseNumber(str) {
       str = str.trim();
@@ -495,10 +587,11 @@
     function loadRound(index) {
       const round = tryRounds[index];
       roundLabel.textContent = `Round ${index + 1} of ${tryRounds.length}`;
-      tryRule.textContent = `Rule: ${round.rule}`;
+      tryRule.textContent = `Gradient Function: ${round.rule}`;
       tryFeedback.textContent = "";
       nextBtn.style.display = "none";
       tryTbody.innerHTML = "";
+      updateChecklist(index);
 
       round.rows.forEach(r => {
         const tr = document.createElement("tr");
@@ -538,12 +631,18 @@
           const allDone = [...tryTbody.querySelectorAll("input")]
             .every(inp => inp.disabled);
           if (allDone) {
+            const doneItem = document.getElementById(`check-${index}`);
+            if (doneItem) {
+              doneItem.classList.remove("active");
+              doneItem.classList.add("done");
+              doneItem.querySelector(".cl-icon").textContent = "✔";
+            }
             if (index < tryRounds.length - 1) {
-              tryFeedback.textContent = `✅ Nice! You cracked "${round.rule}". Ready for a new rule?`;
+              tryFeedback.textContent = `✅ Nice! You cracked "${round.rule}". Ready for a new gradient function?`;
               nextBtn.style.display = "inline-block";
             } else {
               tryFeedback.textContent =
-                "🎉 You've mastered all three slope machines! Notice how the rule can depend on x, y, or both.";
+                "🎉 You've mastered all three gradient function machines! Notice how the rule can depend on x, y, or both.";
             }
           }
         });
