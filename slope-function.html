@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fira+Code&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <script src="https://www.desmos.com/api/v1.9/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0faa6"></script>
   <link rel="stylesheet" href="lesson.css">
   <style>
     /* Slope machine visual */
@@ -316,23 +317,12 @@
     .checklist-item.done .cl-label { color: #bbf7d0; }
 
     .try-graph-wrap {
-      flex: 0 0 200px;
-      min-width: 150px;
-    }
-    #tryGraph {
-      width: 100%;
-      aspect-ratio: 1;
+      flex: 0 0 320px;
+      min-width: 260px;
+      height: 320px;
       border-radius: 0.4rem;
-      display: block;
-      background: #0f172a;
+      overflow: hidden;
       border: 1px solid #1e293b;
-    }
-    .try-graph-caption {
-      font-size: 0.7rem;
-      color: #94a3b8;
-      text-align: center;
-      margin-top: 0.3rem;
-      font-family: "Fira Code", monospace;
     }
 
     @keyframes shake {
@@ -442,10 +432,7 @@
               <div id="try-feedback" class="interactive-result" style="margin-top:0.5rem;"></div>
               <button id="next-round-btn" class="next-btn" style="display:none; margin-top:0.75rem; font-size:0.9rem; padding:0.5rem 1.2rem;">Next Rule →</button>
             </div>
-            <div class="try-graph-wrap">
-              <canvas id="tryGraph"></canvas>
-              <p class="try-graph-caption" id="tryGraphCaption">Slope field</p>
-            </div>
+            <div class="try-graph-wrap" id="desmosCalc"></div>
           </div>
         </div>
       </div>
@@ -545,9 +532,9 @@
   <script>
     // ── Try-the-Gradient-of-a-Function-Machine interactive (multi-round, randomised) ──
     function fmtNum(n) {
-      // Display integers cleanly; 2 dp otherwise
-      if (Math.abs(n - Math.round(n)) < 0.001) return String(Math.round(n));
-      return (Math.round(n * 100) / 100).toString();
+      // Display to 3 significant figures
+      if (n === 0) return '0';
+      return parseFloat(n.toPrecision(3)).toString();
     }
     function mkPt(x, y) {
       const fmt = n => n < 0 ? '\u2212' + fmtNum(Math.abs(n)) : fmtNum(n);
@@ -571,6 +558,7 @@
         curveFn: C => x => C * Math.exp(x) - 1,
         curveVariants: [0.5, 1, 1.5, 2],
         sampleXs: [-1, 0, 0.5, 1],
+        getCurveLaTeX: C => `y=${parseFloat(C.toFixed(4))}e^{x}-1`,
       },
       {
         rule: "slope = y / x",
@@ -579,6 +567,7 @@
         curveFn: C => x => C * x,
         curveVariants: [-2, -1.5, -1, 0.5, 1, 1.5, 2, 3],
         sampleXs: [-2, -1, 1, 2],
+        getCurveLaTeX: C => { const c = parseFloat(C.toFixed(4)); return c === 1 ? 'y=x' : c === -1 ? 'y=-x' : `y=${c}x`; },
       },
       {
         rule: "slope = x \u2212 2y + 1",
@@ -587,6 +576,7 @@
         curveFn: C => x => (2 * x + 1) / 4 + C * Math.exp(-2 * x),
         curveVariants: [0.5, 0.75, 1.0, 1.5],
         sampleXs: [0, 0.5, 1, 1.5],
+        getCurveLaTeX: C => 'y=\\frac{2x+1}{4}+' + parseFloat(C.toFixed(4)) + 'e^{-2x}',
       }
     ];
 
@@ -598,6 +588,7 @@
       return {
         rule: def.rule,
         C, yFn,
+        curveLaTeX: def.getCurveLaTeX(C),
         slopeFn: def.slopeFn,
         sampleXs: def.sampleXs,
         rows: xs.map(x => {
@@ -616,151 +607,76 @@
     const tryFeedback = document.getElementById("try-feedback");
     const nextBtn     = document.getElementById("next-round-btn");
 
-    const tryGraphCanvas  = document.getElementById("tryGraph");
-    const tryGraphCtx     = tryGraphCanvas.getContext("2d");
-    const tryGraphCaption = document.getElementById("tryGraphCaption");
-
-    function computeGridStep(range) {
-      if (range <= 4)  return 1;
-      if (range <= 10) return 2;
-      return Math.ceil(range / 4);
+    let desmosCalc;
+    function initDesmos() {
+      const elt = document.getElementById('desmosCalc');
+      if (!elt || !window.Desmos) return;
+      desmosCalc = Desmos.GraphingCalculator(elt, {
+        keypad: false, expressions: false, settingsMenu: false,
+        zoomButtons: true, lockViewport: false
+      });
     }
 
-    function drawTryGraph(round, revealed) {
-      const canvas = tryGraphCanvas;
-      const ctx2   = tryGraphCtx;
-      const rect   = canvas.getBoundingClientRect();
-      if (!rect.width || !rect.height) return;
-      const dpr = window.devicePixelRatio || 1;
-      canvas.width  = rect.width  * dpr;
-      canvas.height = rect.height * dpr;
-      ctx2.scale(dpr, dpr);
-      const W = rect.width, H = rect.height;
-
-      // Dynamic bounding box from this round's points
+    function updateDesmos(round, revealed) {
+      if (!desmosCalc) return;
       const xs = round.rows.map(r => r.x);
       const ys = round.rows.map(r => r.y);
-      let xMin = Math.min(...xs) - 2, xMax = Math.max(...xs) + 2;
-      let yMin = Math.min(...ys) - 2, yMax = Math.max(...ys) + 2;
-      if (xMin > -0.5) xMin = -0.5;
-      if (yMin > -0.5) yMin = -0.5;
-      const toSX = x => ((x - xMin) / (xMax - xMin)) * W;
-      const toSY = y => H - ((y - yMin) / (yMax - yMin)) * H;
-
-      // Background
-      ctx2.fillStyle = "#0f172a";
-      ctx2.fillRect(0, 0, W, H);
-
-      // Grid
-      ctx2.strokeStyle = "#1e293b";
-      ctx2.lineWidth = 1;
-      const xStep = computeGridStep(xMax - xMin);
-      const yStep = computeGridStep(yMax - yMin);
-      for (let gx = Math.ceil(xMin / xStep) * xStep; gx <= xMax + 0.001; gx += xStep) {
-        ctx2.beginPath(); ctx2.moveTo(toSX(gx), 0); ctx2.lineTo(toSX(gx), H); ctx2.stroke();
-      }
-      for (let gy = Math.ceil(yMin / yStep) * yStep; gy <= yMax + 0.001; gy += yStep) {
-        ctx2.beginPath(); ctx2.moveTo(0, toSY(gy)); ctx2.lineTo(W, toSY(gy)); ctx2.stroke();
-      }
-
-      // Axes
-      ctx2.strokeStyle = "#475569";
-      ctx2.lineWidth = 1.5;
-      const ax0 = Math.max(xMin, Math.min(xMax, 0));
-      const ay0 = Math.max(yMin, Math.min(yMax, 0));
-      ctx2.beginPath(); ctx2.moveTo(toSX(ax0), 0); ctx2.lineTo(toSX(ax0), H); ctx2.stroke();
-      ctx2.beginPath(); ctx2.moveTo(0, toSY(ay0)); ctx2.lineTo(W, toSY(ay0)); ctx2.stroke();
-
-      // Axis tick labels
-      ctx2.font = "9px 'Fira Code', monospace";
-      ctx2.fillStyle = "#475569";
-      ctx2.textAlign = "center";
-      for (let gx = Math.ceil(xMin / xStep) * xStep; gx <= xMax + 0.001; gx += xStep) {
-        ctx2.fillText(String(Math.round(gx)), toSX(gx), toSY(ay0) + 11);
-      }
-      ctx2.textAlign = "right";
-      for (let gy = Math.ceil(yMin / yStep) * yStep; gy <= yMax + 0.001; gy += yStep) {
-        ctx2.fillText(String(Math.round(gy)), toSX(ax0) - 3, toSY(gy) + 3);
-      }
-
-      // Background slope field (sparse grid)
-      const fStep = Math.max(xStep, yStep);
-      const segH  = (xMax - xMin) * 0.07;
-      ctx2.lineWidth = 1;
-      ctx2.setLineDash([]);
-      for (let fx = Math.ceil(xMin / fStep) * fStep; fx <= xMax + 0.001; fx += fStep) {
-        for (let fy = Math.ceil(yMin / fStep) * fStep; fy <= yMax + 0.001; fy += fStep) {
-          const s = round.slopeFn(fx, fy);
-          if (!isFinite(s)) continue;
-          const ang = Math.atan(s);
-          const ddx = segH * Math.cos(ang), ddy = segH * Math.sin(ang);
-          ctx2.strokeStyle = "rgba(71,85,105,0.55)";
-          ctx2.beginPath();
-          ctx2.moveTo(toSX(fx - ddx), toSY(fy - ddy));
-          ctx2.lineTo(toSX(fx + ddx), toSY(fy + ddy));
-          ctx2.stroke();
+      const xMin = Math.min(...xs) - 2.5, xMax = Math.max(...xs) + 2.5;
+      const yMin = Math.min(...ys) - 2.5, yMax = Math.max(...ys) + 2.5;
+      desmosCalc.setBlank();
+      desmosCalc.setMathBounds({ left: xMin, right: xMax, bottom: yMin, top: yMax });
+      const exprs = [];
+      // Slope field: parametric tick segments on a grid
+      const fStep = Math.max(1, Math.ceil(Math.max(xMax - xMin, yMax - yMin) / 8));
+      const segLen = 0.28 * fStep;
+      let sfIdx = 0;
+      for (let gx = Math.round(xMin / fStep) * fStep; gx <= xMax + 0.001; gx += fStep) {
+        for (let gy = Math.round(yMin / fStep) * fStep; gy <= yMax + 0.001; gy += fStep) {
+          const m = round.slopeFn(gx, gy);
+          if (!isFinite(m)) continue;
+          const ang = Math.atan(m);
+          const ca = Math.cos(ang).toFixed(4);
+          const sa = Math.sin(ang).toFixed(4);
+          const yPart = `${gy}${parseFloat(sa) >= 0 ? '+' : ''}${sa}t`;
+          exprs.push({
+            id: `sf${sfIdx++}`,
+            latex: `(${gx}+${ca}t,${yPart})`,
+            parametricDomain: { min: String(-segLen), max: String(segLen) },
+            color: '#475569', lineWidth: 1
+          });
         }
       }
-
-      // Highlighted slope segments through revealed question points
-      const segQ = (xMax - xMin) * 0.14;
-      round.rows.forEach((r, i) => {
-        if (!revealed.has(i)) return;
-        const s = round.slopeFn(r.x, r.y);
-        if (!isFinite(s)) return;
-        const ang = Math.atan(s);
-        const dx = segQ * Math.cos(ang), dy = segQ * Math.sin(ang);
-        ctx2.strokeStyle = "#4ade80";
-        ctx2.lineWidth = 2.5;
-        ctx2.setLineDash([]);
-        ctx2.beginPath();
-        ctx2.moveTo(toSX(r.x - dx), toSY(r.y - dy));
-        ctx2.lineTo(toSX(r.x + dx), toSY(r.y + dy));
-        ctx2.stroke();
-      });
-
-      // Reveal full solution curve once all points are answered
-      const allRevealed = round.rows.length > 0 && revealed.size === round.rows.length;
-      if (allRevealed && round.yFn) {
-        ctx2.strokeStyle = "rgba(167, 139, 250, 0.9)";
-        ctx2.lineWidth = 2.2;
-        ctx2.setLineDash([]);
-        ctx2.beginPath();
-        let cStarted = false;
-        for (let cx = xMin + 0.05; cx <= xMax - 0.05; cx += 0.025) {
-          if (Math.abs(cx) < 0.05 && round.rule.includes("y / x")) { cStarted = false; continue; } // skip x=0 singularity
-          const cy = round.yFn(cx);
-          if (!isFinite(cy) || cy < yMin - 0.5 || cy > yMax + 0.5) { cStarted = false; continue; }
-          if (!cStarted) { ctx2.moveTo(toSX(cx), toSY(cy)); cStarted = true; }
-          else ctx2.lineTo(toSX(cx), toSY(cy));
-        }
-        ctx2.stroke();
-        // Label near the middle-right
-        const labelX = xMin + (xMax - xMin) * 0.65;
-        const labelY = round.yFn(labelX);
-        if (isFinite(labelY) && labelY > yMin + 0.3 && labelY < yMax - 0.3) {
-          ctx2.font = "bold 9px 'Fira Code', monospace";
-          ctx2.fillStyle = "rgba(167, 139, 250, 0.85)";
-          ctx2.textAlign = "left";
-          ctx2.fillText("\u2190 solution curve", toSX(labelX) + 4, toSY(labelY) - 5);
-        }
-      }
-
-      // Question point dots (drawn on top of curve)
+      // Question points + revealed slope segments
       round.rows.forEach((r, i) => {
         const done = revealed.has(i);
-        ctx2.beginPath();
-        ctx2.arc(toSX(r.x), toSY(r.y), 5, 0, 2 * Math.PI);
-        ctx2.fillStyle   = done ? "#4ade80" : "#38bdf8";
-        ctx2.strokeStyle = done ? "#16a34a" : "#0369a1";
-        ctx2.lineWidth   = 1.5;
-        ctx2.fill();
-        ctx2.stroke();
+        exprs.push({
+          id: `pt${i}`, latex: `(${r.x},${r.y})`,
+          color: done ? '#4ade80' : '#38bdf8',
+          pointSize: 12, showLabel: true, label: r.point
+        });
+        if (done) {
+          const m = round.slopeFn(r.x, r.y);
+          if (isFinite(m)) {
+            const ang = Math.atan(m);
+            const ca = Math.cos(ang).toFixed(4);
+            const sa = Math.sin(ang).toFixed(4);
+            const xPt = `${r.x}+${ca}t`;
+            const yPt = `${r.y}${parseFloat(sa) >= 0 ? '+' : ''}${sa}t`;
+            exprs.push({
+              id: `seg${i}`,
+              latex: `(${xPt},${yPt})`,
+              parametricDomain: { min: '-0.45', max: '0.45' },
+              color: '#4ade80', lineWidth: 2.5
+            });
+          }
+        }
       });
-
-      tryGraphCaption.textContent = round.rule;
+      // Solution curve revealed when all correct
+      if (round.rows.length > 0 && revealed.size === round.rows.length && round.curveLaTeX) {
+        exprs.push({ id: 'curve', latex: round.curveLaTeX, color: '#a78bfa', lineWidth: 2.5 });
+      }
+      desmosCalc.setExpressions(exprs);
     }
-
     function updateChecklist(completedIndex) {
       tryRounds.forEach((_, i) => {
         const item = document.getElementById(`check-${i}`);
@@ -811,7 +727,7 @@
         tryTbody.appendChild(tr);
       });
 
-      requestAnimationFrame(() => drawTryGraph(round, currentRevealed));
+      updateDesmos(round, currentRevealed);
 
       function submitAll() {
         const rows = [...tryTbody.querySelectorAll("tr")];
@@ -837,7 +753,7 @@
             }, 600);
           }
         });
-        drawTryGraph(round, currentRevealed);
+        updateDesmos(round, currentRevealed);
 
         if (allCorrect) {
           const doneItem = document.getElementById(`check-${index}`);
@@ -886,10 +802,7 @@
       }
     });
 
-    window.addEventListener("resize", () => {
-      if (tryRounds[currentRound]) drawTryGraph(tryRounds[currentRound], currentRevealed);
-    });
-
+    initDesmos();
     loadRound(0);
 
     // ── Slope Field Visualization ──
