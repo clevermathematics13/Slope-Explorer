@@ -600,25 +600,23 @@
           `<td><input type="text" inputmode="decimal" placeholder="?"></td>` +
           `<td class="check-cell"></td>`;
         tryTbody.appendChild(tr);
+      });
 
-        const input = tr.querySelector("input");
-        const check = tr.querySelector(".check-cell");
-
-        input.addEventListener("keydown", (e) => {
-          if (e.key !== "Enter") return;
+      function submitAll() {
+        const rows = [...tryTbody.querySelectorAll("tr")];
+        let allCorrect = true;
+        rows.forEach((tr, i) => {
+          const input = tr.querySelector("input");
+          const check = tr.querySelector(".check-cell");
+          if (input.disabled) return; // already locked correct
           const val = parseNumber(input.value);
-          if (Number.isNaN(val)) return;
-
-          if (Math.abs(val - r.answer) < 0.01) {
+          if (!Number.isNaN(val) && Math.abs(val - round.rows[i].answer) < 0.01) {
             input.classList.remove("wrong");
             input.classList.add("correct");
             input.disabled = true;
             check.textContent = "✅";
-            // Move focus to the next unanswered input
-            const allInputs = [...tryTbody.querySelectorAll("input")];
-            const next = allInputs.find(inp => !inp.disabled);
-            if (next) next.focus();
           } else {
+            allCorrect = false;
             input.classList.add("wrong");
             check.textContent = "❌";
             setTimeout(() => {
@@ -626,24 +624,36 @@
               check.textContent = "";
             }, 600);
           }
+        });
 
-          // Check if round complete
-          const allDone = [...tryTbody.querySelectorAll("input")]
-            .every(inp => inp.disabled);
-          if (allDone) {
-            const doneItem = document.getElementById(`check-${index}`);
-            if (doneItem) {
-              doneItem.classList.remove("active");
-              doneItem.classList.add("done");
-              doneItem.querySelector(".cl-icon").textContent = "✔";
-            }
-            if (index < tryRounds.length - 1) {
-              tryFeedback.textContent = `✅ Nice! You cracked "${round.rule}". Ready for a new gradient function?`;
-              nextBtn.style.display = "inline-block";
-            } else {
-              tryFeedback.textContent =
-                "🎉 You've mastered all three gradient function machines! Notice how the rule can depend on x, y, or both.";
-            }
+        if (allCorrect) {
+          const doneItem = document.getElementById(`check-${index}`);
+          if (doneItem) {
+            doneItem.classList.remove("active");
+            doneItem.classList.add("done");
+            doneItem.querySelector(".cl-icon").textContent = "✔";
+          }
+          if (index < tryRounds.length - 1) {
+            tryFeedback.textContent = `✅ Nice! You cracked "${round.rule}". Ready for a new gradient function?`;
+            nextBtn.style.display = "inline-block";
+          } else {
+            tryFeedback.textContent =
+              "🎉 You've mastered all three gradient function machines! Notice how the rule can depend on x, y, or both.";
+          }
+        }
+      }
+
+      [...tryTbody.querySelectorAll("input")].forEach(input => {
+        input.addEventListener("keydown", (e) => {
+          if (e.key !== "Enter") return;
+          const allInputs = [...tryTbody.querySelectorAll("input")];
+          const allFilled = allInputs.every(inp => inp.disabled || inp.value.trim() !== "");
+          if (allFilled) {
+            submitAll();
+          } else {
+            // Advance focus to next empty box
+            const next = allInputs.find(inp => !inp.disabled && inp.value.trim() === "" && inp !== input);
+            if (next) next.focus();
           }
         });
       });
