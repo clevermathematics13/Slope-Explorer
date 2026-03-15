@@ -111,21 +111,25 @@
     }
 
     /* Slope field canvas */
+    .field-and-panel {
+      display: flex;
+      gap: 1.25rem;
+      align-items: flex-start;
+      margin: 1rem 0;
+      flex-wrap: wrap;
+    }
     .field-wrap {
-      width: 100%;
-      max-width: 460px;
+      flex: 1 1 340px;
+      min-width: 260px;
       aspect-ratio: 1;
-      margin: 1rem auto;
       border-radius: 0.5rem;
       overflow: hidden;
+      position: relative;
     }
     .field-wrap canvas {
       width: 100% !important;
       height: 100% !important;
       display: block;
-    }
-    .field-wrap {
-      position: relative;
     }
     .field-tooltip {
       position: absolute;
@@ -143,11 +147,13 @@
     }
 
     .family-panel {
-      margin-top: 0.9rem;
+      flex: 0 0 240px;
+      min-width: 200px;
       background: #0b1327;
       border: 1px solid #334155;
       border-radius: 0.65rem;
       padding: 0.85rem;
+      align-self: flex-start;
     }
     .family-row {
       display: flex;
@@ -161,7 +167,7 @@
       margin-bottom: 0;
     }
     .family-row input[type="range"] {
-      width: 220px;
+      width: 100%;
       max-width: 100%;
       accent-color: #facc15;
     }
@@ -364,6 +370,7 @@
       <h2>👀 See the Slopes</h2>
       <p>Below, every short line segment shows the slope the machine gives at that point. This is called a <strong>slope field</strong>. Notice how the segments get steeper as y increases.</p>
       <p style="font-size: 0.82rem; color: #94a3b8;">Hover over any point to see its slope value.</p>
+      <div class="field-and-panel">
       <div class="field-wrap">
         <canvas id="slopeField"></canvas>
         <div class="field-tooltip" id="fieldTooltip"></div>
@@ -378,6 +385,7 @@
           <label><input type="checkbox" id="showFamily" checked> Show many possible solution curves</label>
           <span class="match-status" id="matchStatus">Set C = 1 to match the initial condition y(0) = 1.</span>
         </div>
+      </div>
       </div>
       <p>The mystery curve (the one we're trying to approximate) follows these tiny direction arrows perfectly. Euler's method approximates that path by taking steps along them.</p>
       <p style="font-size: 0.82rem; color: #94a3b8;">Key idea: infinitely many curves follow this slope field, but only one passes through a chosen initial condition.</p>
@@ -592,7 +600,7 @@
       const W = rect.width, H = rect.height;
 
       // World coords
-      const xMin = -0.5, xMax = 4.5, yMin = -1.5, yMax = 6;
+      const xMin = -2.5, xMax = 4.5, yMin = -3.5, yMax = 6;
       const toScreenX = (x) => ((x - xMin) / (xMax - xMin)) * W;
       const toScreenY = (y) => H - ((y - yMin) / (yMax - yMin)) * H;
 
@@ -603,13 +611,13 @@
       // Grid
       ctx.strokeStyle = "#1e293b";
       ctx.lineWidth = 1;
-      for (let x = 0; x <= 4; x++) {
+      for (let x = -2; x <= 4; x++) {
         ctx.beginPath();
         ctx.moveTo(toScreenX(x), 0);
         ctx.lineTo(toScreenX(x), H);
         ctx.stroke();
       }
-      for (let y = 0; y <= 6; y++) {
+      for (let y = -3; y <= 6; y++) {
         ctx.beginPath();
         ctx.moveTo(0, toScreenY(y));
         ctx.lineTo(W, toScreenY(y));
@@ -629,21 +637,24 @@
       ctx.stroke();
 
       // Axis labels
-      ctx.font = "12px 'Fira Code', monospace";
+      ctx.font = "11px 'Fira Code', monospace";
       ctx.fillStyle = "#94a3b8";
       ctx.textAlign = "center";
-      for (let x = 0; x <= 4; x++) {
-        ctx.fillText(x, toScreenX(x), toScreenY(0) + 16);
+      for (let x = -2; x <= 4; x++) {
+        if (x === 0) continue;
+        ctx.fillText(x, toScreenX(x), toScreenY(0) + 14);
       }
+      ctx.fillText("0", toScreenX(0) - 12, toScreenY(0) + 14);
       ctx.textAlign = "right";
-      for (let y = 0; y <= 5; y++) {
-        ctx.fillText(y, toScreenX(0) - 6, toScreenY(y) + 4);
+      for (let y = -3; y <= 5; y++) {
+        if (y === 0) continue;
+        ctx.fillText(y, toScreenX(0) - 5, toScreenY(y) + 4);
       }
 
       // Slope segments
       const segLen = 0.25;
-      for (let x = 0; x <= 4; x += 0.5) {
-        for (let y = -1; y <= 5.5; y += 0.5) {
+      for (let x = -2; x <= 4; x += 0.5) {
+        for (let y = -3; y <= 5.5; y += 0.5) {
           const slope = y; // our rule: slope = y
           const angle = Math.atan(slope);
           const dx = segLen * Math.cos(angle);
@@ -672,7 +683,7 @@
         ctx.setLineDash(dash);
         ctx.beginPath();
         let started = false;
-        for (let x = 0; x <= 4; x += 0.04) {
+        for (let x = -2; x <= 4; x += 0.04) {
           const y = c * Math.exp(x);
           if (y < yMin - 0.2 || y > yMax + 0.2) continue;
           const sx = toScreenX(x);
@@ -737,10 +748,10 @@
       const mx = e.clientX - rect.left;
       const my = e.clientY - rect.top;
       const W = rect.width, H = rect.height;
-      const xMin = -0.5, xMax = 4.5, yMin = -1.5, yMax = 6;
+      const xMin = -2.5, xMax = 4.5, yMin = -3.5, yMax = 6;
       const worldX = (mx / W) * (xMax - xMin) + xMin;
       const worldY = (1 - my / H) * (yMax - yMin) + yMin;
-      if (worldX >= 0 && worldX <= 4.5 && worldY >= -1.5 && worldY <= 6) {
+      if (worldX >= -2.5 && worldX <= 4.5 && worldY >= -3.5 && worldY <= 6) {
         tooltip.textContent = `(${worldX.toFixed(1)}, ${worldY.toFixed(1)})  slope = ${worldY.toFixed(1)}`;
         tooltip.style.display = "block";
         // Position tooltip near cursor, offset slightly so it doesn't obscure
