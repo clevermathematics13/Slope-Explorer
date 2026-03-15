@@ -347,13 +347,13 @@
   <nav class="lesson-nav">
     <a href="index.html">1 — Intro</a>
     <span class="sep">›</span>
-    <a href="slope-function.html" class="active">2 — The Gradient Function Machine</a>
+    <a href="slope-function.html" class="active">2 — The Gradient of a Function Machine</a>
     <span class="sep">›</span>
     <a href="path-builder.html">3 — Path Builder</a>
   </nav>
 
   <header class="lesson-header">
-    <h1>⚙️ The Gradient Function Machine</h1>
+    <h1>⚙️ The Gradient of a Function Machine</h1>
     <p class="subtitle">Understanding a function that outputs slope instead of height</p>
   </header>
 
@@ -371,7 +371,7 @@
 
     <!-- Section 2: The Machine -->
     <section class="lesson-section">
-      <h2>Meet the Gradient Function Machine</h2>
+      <h2>Meet the Gradient of a Function Machine</h2>
       <p>Think of the slope rule as a <strong>machine</strong>. You feed it a point, and it tells you the slope — the gradient — at that location.</p>
 
       <div class="machine-graphic">
@@ -381,7 +381,7 @@
         </div>
         <div class="machine-arrow">→</div>
         <div class="machine-box machine-rule-box">
-          <div class="label">Gradient Function (rule)</div>
+          <div class="label">Gradient of a Function (rule)</div>
           <div class="value">slope = y</div>
         </div>
         <div class="machine-arrow">→</div>
@@ -391,7 +391,7 @@
         </div>
       </div>
 
-      <p>Our particular gradient function machine has a very simple rule: <strong>the slope equals the y-value</strong>. That's it!</p>
+      <p>Our particular gradient of a function machine has a very simple rule: <strong>the slope equals the y-value</strong>. That's it!</p>
 
       <div class="concept-card">
         <h3>What does this mean in plain English?</h3>
@@ -399,10 +399,10 @@
       </div>
     </section>
 
-    <!-- Section 3: Try the Gradient Function Machine -->
+    <!-- Section 3: Try the Gradient of a Function Machine -->
     <section class="lesson-section">
-      <h2>🧪 Try the Gradient Function Machine</h2>
-      <p>Feed the gradient function machine different points. Type the slope it should output, then press <strong>Enter</strong>. Work through each rule — a checklist on the left tracks your progress.</p>
+      <h2>🧪 Try the Gradient of a Function Machine</h2>
+      <p>Feed the gradient of a function machine different points. Type the slope it should output, then press <strong>Enter</strong>. Work through each rule — a checklist on the left tracks your progress.</p>
 
       <div class="try-layout">
         <!-- Left: progress checklist -->
@@ -457,12 +457,12 @@
 
       <div class="concept-card yellow">
         <h3>The Pattern</h3>
-        <p>Different rules produce different slopes! The gradient function machine can depend on <strong>y alone</strong> (slope = y + 1), <strong>both x and y</strong> (slope = y / x), or a <strong>linear mix</strong> (slope = x - 2y + 1).</p>
+        <p>Different rules produce different slopes! The gradient of a function machine can depend on <strong>y alone</strong> (slope = y + 1), <strong>both x and y</strong> (slope = y / x), or a <strong>linear mix</strong> (slope = x - 2y + 1).</p>
         <p>With <em>slope = y + 1</em>, only the height matters — the x-value is irrelevant. With <em>slope = y / x</em>, both values matter: the same y can give a very different slope depending on how far along the x-axis you are. And <em>slope = x - 2y + 1</em> combines them linearly.</p>
       </div>
 
       <div class="analogy">
-        <strong>🏔️ Think of it this way:</strong> A differential equation is just a <strong>rule that assigns a slope to every point</strong>. What determines the slope depends entirely on the rule. For our Path Builder Challenge we'll use Δy/Δx = y — where the higher you are, the steeper you climb — but now you know that's just <em>one</em> possible gradient function. Others, like slope = y + 1 or slope = y / x, work very differently.
+        <strong>🏔️ Think of it this way:</strong> A differential equation is just a <strong>rule that assigns a slope to every point</strong>. What determines the slope depends entirely on the rule. For our Path Builder Challenge we'll use Δy/Δx = y — where the higher you are, the steeper you climb — but now you know that's just <em>one</em> possible gradient of a function. Others, like slope = y + 1 or slope = y / x, work very differently.
       </div>
     </section>
 
@@ -505,7 +505,7 @@
         <p><strong>4.</strong> Repeat from step 1</p>
       </div>
 
-      <p>The gradient function machine is the engine that drives every step. Now that you understand how it works, you're ready to build paths!</p>
+      <p>The gradient of a function machine is the engine that drives every step. Now that you understand how it works, you're ready to build paths!</p>
 
       <div class="interactive-box">
         <h3>Checkpoint: Prove Your Understanding</h3>
@@ -765,7 +765,7 @@
     function loadRound(index) {
       const round = tryRounds[index];
       roundLabel.textContent = `Round ${index + 1} of ${tryRounds.length}`;
-      tryRule.textContent = `Gradient Function: ${round.rule}`;
+      tryRule.textContent = `Gradient of a Function: ${round.rule}`;
       tryFeedback.textContent = "";
       nextBtn.style.display = "none";
       tryTbody.innerHTML = "";
@@ -817,11 +817,11 @@
             doneItem.querySelector(".cl-icon").textContent = "\u2714";
           }
           if (index < tryRounds.length - 1) {
-            tryFeedback.textContent = `\u2705 Nice! You cracked "${round.rule}". Ready for a new gradient function?`;
+            tryFeedback.textContent = `\u2705 Nice! You cracked "${round.rule}". Ready for a new gradient of a function?`;
             nextBtn.style.display = "inline-block";
           } else {
             tryFeedback.textContent =
-              "\ud83c\udf89 You\u2019ve mastered all three gradient function machines! Notice how the rule can depend on x, y, or both.";
+              "\ud83c\udf89 You\u2019ve mastered all three gradient of a function machines! Notice how the rule can depend on x, y, or both.";
           }
         }
       }
@@ -847,6 +847,13 @@
     nextBtn.addEventListener("click", () => {
       currentRound++;
       loadRound(currentRound);
+    });
+
+    // Press Enter anywhere on the page to advance when Next Rule button is visible
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && nextBtn.style.display !== "none") {
+        nextBtn.click();
+      }
     });
 
     window.addEventListener("resize", () => {
